@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="bn">
 <head>
@@ -5,399 +6,379 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ad Reward Games App</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f4f6f9; color: #333; }
-        .container { max-width: 400px; margin: 0 auto; background: white; min-height: 100vh; position: relative; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .page { display: none; padding: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f0f2f5; color: #333; }
+        .container { max-width: 450px; margin: 0 auto; background: white; min-height: 100vh; position: relative; box-shadow: 0 0 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+        .page { display: none; padding: 20px; flex-grow: 1; }
         .page.active { display: block; }
         
-        /* Headers & Nav */
-        .header { display: flex; justify-content: space-between; align-items: center; background: #007bff; color: white; padding: 15px; }
-        .header button { background: #0056b3; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; }
+        /* Navigation / Header */
+        .header { display: flex; justify-content: space-between; align-items: center; background: #4b6cb7; color: white; padding: 15px; }
+        .header button { background: #3a539b; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; }
+        .header button:hover { background: #2c4179; }
         
         /* Inputs & Buttons */
-        input[type="text"], input[type="password"], input[type="number"] { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        input[type="text"], input[type="password"], input[type="number"] { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 14px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 10px; font-weight: bold; }
         .btn:hover { background: #218838; }
-        .btn-menu { background: #17a2b8; margin-bottom: 10px; }
         
+        /* Main Menu */
+        .btn-main-game { background: #ff4757; height: 120px; font-size: 28px; border-radius: 10px; margin-top: 50px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s; }
+        .btn-main-game:active { transform: scale(0.95); }
+
         /* Tables */
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-        th { background-color: #f2f2f2; }
-<iframe src="https://www.effectivecpmnetwork.com/md81zvhi?key=8506414f0f2530f691d6edefcf713cfe" width="560" height="315" style="border:0;" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
-        /* Game List styling */
-        .game-item { background: #e9ecef; padding: 15px; margin-bottom: 15px; border-radius: 5px; cursor: pointer; text-align: center; font-weight: bold; }
-        .banner-ad-placeholder { background: #ffc107; padding: 10px; text-align: center; margin-bottom: 15px; font-size: 12px; color: #333; border: 1px dashed #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        th, td { border: 1px solid #ddd; padding: 12px 8px; text-align: center; }
+        th { background-color: #f8f9fa; font-weight: bold; }
 
-        /* Spinner */
-        .spinner-container { position: relative; width: 250px; height: 250px; margin: 20px auto; border-radius: 50%; border: 5px solid #333; overflow: hidden; transition: transform 2s ease-out; }
-        .slice { position: absolute; width: 50%; height: 50%; transform-origin: 100% 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; text-align: center; }
-        .slice-1 { background: black; transform: rotate(0deg); }
-        .slice-2 { background: red; transform: rotate(90deg); }
-        .slice-3 { background: orange; transform: rotate(180deg); }
-        .slice-4 { background: blue; transform: rotate(270deg); }
-        .spin-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; background: white; border-radius: 50%; font-weight: bold; cursor: pointer; border: 2px solid #333; z-index: 10; }
-        .spin-btn::before { content: ''; position: absolute; top: -15px; left: 15px; border-width: 0 10px 20px 10px; border-style: solid; border-color: transparent transparent white transparent; }
+        /* Sub Menu */
+        .sub-menu-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .sub-menu-table td { padding: 15px; border: 1px solid #ddd; text-align: center; font-size: 18px; font-weight: bold; cursor: pointer; background: #fdfdfd; transition: background 0.2s; }
+        .sub-menu-table td:hover { background: #f1f1f1; }
 
-        /* Fake Ad Screen */
-        #ad-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); color: white; z-index: 9999; flex-direction: column; justify-content: center; align-items: center; }
+        /* Spinner Game */
+        .wheel-container { position: relative; width: 260px; height: 260px; margin: 40px auto; border-radius: 50%; overflow: hidden; border: 4px solid #fff; box-shadow: 0 0 10px rgba(0,0,0,0.3); transition: transform 2s cubic-bezier(0.25, 1, 0.5, 1); }
+        .quadrant { position: absolute; width: 50%; height: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; text-align: center; padding: 10px; box-sizing: border-box; }
+        .q-black { background: black; top: 0; left: 0; } /* Native Ads */
+        .q-red { background: red; top: 0; left: 50%; } /* Video Ads */
+        .q-blue { background: blue; top: 50%; left: 0; } /* Banner Ads */
+        .q-orange { background: orange; top: 50%; left: 50%; } /* InterstitialvAds */
         
-        .slider-container { margin-top: 20px; }
-        input[type="range"] { width: 100%; }
-        
-        .book-content { padding: 20px; font-size: 14px; line-height: 1.6; background: #fff; border: 1px solid #ddd; margin-top: 20px; }
+        .wheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; background: white; border-radius: 50%; z-index: 10; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; color: #333; box-shadow: 0 0 5px rgba(0,0,0,0.3); }
+        .wheel-center::before { content: ''; position: absolute; top: -15px; left: 20px; border-width: 0 10px 20px 10px; border-style: solid; border-color: transparent transparent white transparent; }
+
+        /* Book Page */
+        .book-page-content { background: #fff; padding: 30px; min-height: 200px; border: 1px solid #ddd; margin-top: 20px; font-size: 16px; line-height: 1.6; text-align: justify; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); }
+
+        /* Slide Show */
+        .slider-wrapper { margin-top: 50px; padding: 20px; background: #fff; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        input[type="range"] { width: 100%; margin-top: 20px; }
+
+        /* Ad Screen Overlay */
+        #ad-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; }
+        .ad-loader { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #ff4757; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
 <div class="container">
     
-    <!-- Fullscreen Ad Overlay -->
-    <div id="ad-overlay">
-        <h2 id="ad-text">Loading Ad...</h2>
-        <p>অ্যাড চলছে, অনুগ্রহ করে অপেক্ষা করুন... (<span id="ad-timer">3</span>s)</p>
+    <!-- Header (Hidden on Login) -->
+    <div id="header" class="header" style="display: none;">
+        <button onclick="navigate('profile-page')">প্রোফাইল</button>
+        <span style="font-weight: bold; font-size: 18px;">ড্যাশবোর্ড</span>
+        <button onclick="navigate('datasheet-page')">Data Sheet</button>
     </div>
 
     <!-- 1. Login Page -->
     <div id="login-page" class="page active">
-        <h2 style="text-align: center;">অ্যাকাউন্ট তৈরি / লগইন</h2>
-        <input type="text" id="username" placeholder="ইউজার নেম">
+        <h2 style="text-align: center; margin-top: 50px;">স্বাগতম</h2>
+        <p style="text-align: center; color: #666;">অ্যাকাউন্ট তৈরি বা লগইন করুন</p>
+        <input type="text" id="username" placeholder="ইউজার নেম লিখুন">
         <input type="password" id="password" placeholder="পাসওয়ার্ড">
-        <button class="btn" onclick="login()">লগইন করুন</button>
-    </div>
-
-    <!-- Header (Visible after login) -->
-    <div id="app-header" class="header" style="display: none;">
-        <button onclick="nav('profile-page')">প্রোফাইল</button>
-        <span style="font-weight: bold;">ড্যাশবোর্ড</span>
-        <button onclick="nav('datasheet-page')">Data Sheet</button>
+        <button class="btn" onclick="doLogin()">লগইন / রেজিস্টার</button>
     </div>
 
     <!-- 2. Main Menu -->
     <div id="main-menu-page" class="page">
-        <button class="btn btn-menu" style="height: 100px; font-size: 24px;" onclick="playGameClick()">গেম খেলুন</button>
+        <button class="btn btn-main-game" onclick="startMainGame()">গেম খেলুন</button>
     </div>
 
     <!-- 3. Profile Page -->
     <div id="profile-page" class="page">
-        <button onclick="nav('main-menu-page')">← ব্যাক</button>
-        <h2>আপনার প্রোফাইল</h2>
-        <p><strong>ইউজার নেম:</strong> <span id="disp-username"></span></p>
-        <p><strong>UID:</strong> <br><span id="disp-uid" style="word-break: break-all; font-family: monospace; color: blue;"></span></p>
+        <button class="btn" style="background: #6c757d; width: auto;" onclick="navigate('main-menu-page')">← ব্যাক</button>
+        <h2 style="margin-top: 20px;">আপনার প্রোফাইল</h2>
+        <div style="background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+            <p><strong>ইউজার নেম:</strong> <span id="prof-user"></span></p>
+            <p><strong>UID (Device based):</strong></p>
+            <p id="prof-uid" style="word-break: break-all; color: #007bff; font-family: monospace; background: #f4f6f9; padding: 10px; border-radius: 5px;"></p>
+        </div>
     </div>
 
     <!-- 4. Data Sheet Page -->
     <div id="datasheet-page" class="page">
-        <button onclick="nav('main-menu-page')">← ব্যাক</button>
-        <h2>Data Sheet</h2>
-        <table>
+        <button class="btn" style="background: #6c757d; width: auto;" onclick="navigate('main-menu-page')">← ব্যাক</button>
+        <h2 style="margin-top: 20px; text-align: center;">Data Sheet</h2>
+        <table id="stats-table">
             <tr>
                 <th>Ad Type</th>
-                <th>Count</th>
+                <th>Views</th>
                 <th>Revenue ($)</th>
             </tr>
             <tr>
                 <td>Video Ads</td>
-                <td id="stat-video-count">0</td>
-                <td id="stat-video-rev">0.00</td>
+                <td id="count-video">0</td>
+                <td id="rev-video">0.00</td>
             </tr>
             <tr>
                 <td>Banner Ads</td>
-                <td id="stat-banner-count">0</td>
-                <td id="stat-banner-rev">0.00</td>
+                <td id="count-banner">0</td>
+                <td id="rev-banner">0.00</td>
             </tr>
             <tr>
                 <td>Native Ads</td>
-                <td id="stat-native-count">0</td>
-                <td id="stat-native-rev">0.00</td>
+                <td id="count-native">0</td>
+                <td id="rev-native">0.00</td>
             </tr>
             <tr>
                 <td>Interstitial Ads</td>
-                <td id="stat-interstitial-count">0</td>
-                <td id="stat-interstitial-rev">0.00</td>
+                <td id="count-inter">0</td>
+                <td id="rev-inter">0.00</td>
             </tr>
         </table>
     </div>
 
-    <!-- 5. Games List Page -->
-    <div id="games-list-page" class="page">
-        <button onclick="nav('main-menu-page')">← ব্যাক</button>
-        <h3 style="text-align: center;">সাব-মেনু গেমস</h3>
-        
-        <div class="game-item" onclick="startMathQuiz()">১. ম্যাথ কুইজ</div>
-        <div class="banner-ad-placeholder">Banner Ad Space</div>
-
-        <div class="game-item" onclick="startSpinner()">২. স্পিন করুন</div>
-        <div class="banner-ad-placeholder">Banner Ad Space</div>
-
-        <div class="game-item" onclick="startBook()">৩. বই পড়ুন</div>
-        <div class="banner-ad-placeholder">Banner Ad Space</div>
-
-        <div class="game-item" onclick="startVideoGame()">৪. ভিডিও দেখুন</div>
-        <div class="banner-ad-placeholder">Banner Ad Space</div>
-
-        <div class="game-item" onclick="startSlideShow()">৫. স্লাইড শো</div>
+    <!-- 5. Sub-menu Games List -->
+    <div id="submenu-page" class="page">
+        <button class="btn" style="background: #6c757d; width: auto;" onclick="navigate('main-menu-page')">← ব্যাক</button>
+        <h3 style="text-align: center; margin-top: 20px;">সাব-মেনু গেমস</h3>
+        <table class="sub-menu-table">
+            <tr><td onclick="navigate('math-page')">১. ম্যাথ কুইজ</td></tr>
+            <tr><td onclick="navigate('spin-page')">২. স্পিন করুন</td></tr>
+            <tr><td onclick="startBook()">৩. বই পড়ুন</td></tr>
+            <tr><td onclick="navigate('video-game-page')">৪. ভিডিও দেখুন</td></tr>
+            <tr><td onclick="navigate('slide-page')">৫. স্লাইড শো</td></tr>
+        </table>
     </div>
 
     <!-- Game 1: Math Quiz -->
-    <div id="math-quiz-page" class="page">
-        <button onclick="nav('games-list-page')">← ব্যাক</button>
-        <h2>ম্যাথ কুইজ</h2>
-        <div style="font-size: 24px; text-align: center; margin: 20px 0;">
-            <span id="math-q">2 + 2 = ?</span>
+    <div id="math-page" class="page">
+        <button class="btn" style="background: #6c757d; width: auto;" onclick="navigate('submenu-page')">← ব্যাক</button>
+        <h2 style="text-align: center;">ম্যাথ কুইজ</h2>
+        <div style="background: #fff; padding: 30px; text-align: center; border-radius: 10px; margin-top: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+            <div id="math-question" style="font-size: 32px; font-weight: bold; margin-bottom: 20px;"></div>
+            <input type="number" id="math-answer" placeholder="উত্তর লিখুন" style="text-align: center; font-size: 20px;">
+            <button class="btn" onclick="checkMathAnswer()">যাচাই করুন</button>
         </div>
-        <input type="number" id="math-ans" placeholder="উত্তর লিখুন">
-        <button class="btn" onclick="checkMath()">যাচাই করুন</button>
     </div>
 
-    <!-- Game 2: Spinner -->
-    <div id="spinner-page" class="page">
-        <button onclick="nav('games-list-page')">← ব্যাক</button>
-        <h2>স্পিন করুন</h2>
-        <div class="spinner-container" id="wheel">
-            <div class="slice slice-1"><span style="margin: 20px 0 0 20px;">Native Ads</span></div>
-            <div class="slice slice-2"><span style="margin: 20px 0 0 -20px;">Video Ads</span></div>
-            <div class="slice slice-3"><span style="margin: -20px 0 0 -20px;">Interstitial<br>Ads</span></div>
-            <div class="slice slice-4"><span style="margin: -20px 0 0 20px;">Banner Ads</span></div>
-            <button class="spin-btn" onclick="spinWheel()">Spin</button>
+    <!-- Game 2: Spin Wheel -->
+    <div id="spin-page" class="page">
+        <button class="btn" style="background: #6c757d; width: auto;" onclick="navigate('submenu-page')">← ব্যাক</button>
+        <h2 style="text-align: center;">স্পিন করুন</h2>
+        <div class="wheel-container" id="wheel">
+            <div class="quadrant q-black">Native Ads</div>
+            <div class="quadrant q-red">Video Ads</div>
+            <div class="quadrant q-blue">Banner Ads</div>
+            <div class="quadrant q-orange">InterstitialvAds</div>
         </div>
+        <div class="wheel-center" onclick="spinWheel()">SPIN</div>
     </div>
 
     <!-- Game 3: Read Book -->
     <div id="book-page" class="page">
-        <button onclick="nav('games-list-page')">← ব্যাক</button>
-        <h2>বই পড়ুন</h2>
-        <p>পৃষ্ঠা: <span id="book-page-num">১</span></p>
-        <div class="book-content" id="book-text">
-            এটি একটি ডেমো লেখা। ২ সেকেন্ড পর স্বয়ংক্রিয়ভাবে পৃষ্ঠা পরিবর্তন হবে।
+        <button class="btn" style="background: #6c757d; width: auto;" onclick="navigate('submenu-page')">← মেনুতে ফিরুন</button>
+        <h2>বই পড়ুন (পৃষ্ঠা: <span id="book-page-num">১</span>)</h2>
+        <div class="book-page-content" id="book-text">
+            এটি একটি ডেমো লেখা। আপনি বইটি পড়ছেন। ২ সেকেন্ড পর স্বয়ংক্রিয়ভাবে পৃষ্ঠা পরিবর্তন হবে...
         </div>
     </div>
 
-    <!-- Game 4: Watch Video -->
-    <div id="video-page" class="page">
-        <button onclick="nav('games-list-page')">← ব্যাক</button>
-        <h2>ভিডিও দেখুন</h2>
-        <button class="btn" style="height: 100px; font-size: 20px; background: red;" onclick="playInGameVideo()">ভিডিও</button>
+    <!-- Game 4: Video Button -->
+    <div id="video-game-page" class="page">
+        <button class="btn" style="background: #6c757d; width: auto;" onclick="navigate('submenu-page')">← ব্যাক</button>
+        <h2 style="text-align: center; margin-top: 30px;">ভিডিও দেখুন</h2>
+        <button class="btn" style="background: #e1b12c; height: 100px; font-size: 24px; margin-top: 30px;" onclick="alert('ভিডিও প্লে হচ্ছে...')">ভিডিও</button>
     </div>
 
     <!-- Game 5: Slide Show -->
     <div id="slide-page" class="page">
-        <button onclick="nav('games-list-page')">← ব্যাক</button>
-        <h2>স্লাইড শো</h2>
-        <p>বাম থেকে ডানে স্লাইড করুন:</p>
-        <div class="slider-container">
-            <input type="range" min="0" max="100" value="0" id="ad-slider" onchange="handleSlide()">
+        <button class="btn" style="background: #6c757d; width: auto;" onclick="navigate('submenu-page')">← ব্যাক</button>
+        <h2 style="text-align: center;">স্লাইড শো</h2>
+        <div class="slider-wrapper">
+            <p style="text-align: center; font-weight: bold;">বাম থেকে ডানে স্লাইড করুন</p>
+            <input type="range" min="0" max="100" value="0" id="slider" oninput="checkSlider()">
         </div>
+    </div>
+
+    <!-- Mock Ad Screen -->
+    <div id="ad-modal">
+        <div class="ad-loader"></div>
+        <h2>Rewarded Ad Playing...</h2>
+        <p>অ্যাডটি চলছে, দয়া করে অপেক্ষা করুন।</p>
     </div>
 
 </div>
 
 <script>
-    // --- State Management ---
+    // --- State Variables ---
     let currentUser = "";
     let currentUID = "";
-    let adStats = {
-        'Video Ads': { count: 0, rev: 0 },
-        'Banner Ads': { count: 0, rev: 0 },
-        'Native Ads': { count: 0, rev: 0 },
-        'Interstitial Ads': { count: 0, rev: 0 }
-    };
     
-    const REVENUE_PER_AD = {
-        'Video Ads': 0.05,
-        'Banner Ads': 0.01,
-        'Native Ads': 0.02,
-        'Interstitial Ads': 0.04
-    };
+    // Revenue rates per ad view
+    const adRates = { video: 0.05, banner: 0.01, native: 0.02, inter: 0.04 };
+    let stats = { video: 0, banner: 0, native: 0, inter: 0 };
 
     // --- Core Functions ---
-    function generateUID() {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        let result = 'UID-IP-'; // Prefix 
-        for (let i = 0; i < 20; i++) {
-            result += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return result;
-    }
-
-    function nav(pageId) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    function navigate(pageId) {
+        document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
         document.getElementById(pageId).classList.add('active');
-        if(pageId === 'datasheet-page') updateDataSheet();
+        if (pageId === 'datasheet-page') updateDataSheetUI();
+        if (pageId === 'math-page') generateMathQuestion();
     }
 
-    function login() {
-        const user = document.getElementById('username').value;
-        const pass = document.getElementById('password').value;
-        if(user.length < 3 || pass.length < 3) {
-            alert("সঠিক ইউজার নেম ও পাসওয়ার্ড দিন।"); return;
+    function generateUID() {
+        // Generating 20+ chars alphanumeric UID simulating IP hash
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let uid = 'UID' + Math.floor(Math.random() * 999) + 'X';
+        while (uid.length < 22) { uid += chars.charAt(Math.floor(Math.random() * chars.length)); }
+        return uid;
+    }
+
+    function doLogin() {
+        const user = document.getElementById('username').value.trim();
+        const pass = document.getElementById('password').value.trim();
+        if (user.length < 2 || pass.length < 2) {
+            alert("অনুগ্রহ করে সঠিক ইউজার নেম ও পাসওয়ার্ড দিন।"); return;
         }
+        
         currentUser = user;
         currentUID = generateUID();
         
-        document.getElementById('disp-username').innerText = currentUser;
-        document.getElementById('disp-uid').innerText = currentUID;
+        document.getElementById('prof-user').innerText = currentUser;
+        document.getElementById('prof-uid').innerText = currentUID;
         
-        document.getElementById('app-header').style.display = 'flex';
-        nav('main-menu-page');
+        document.getElementById('header').style.display = 'flex';
+        navigate('main-menu-page');
     }
 
-    function updateDataSheet() {
-        ['Video Ads', 'Banner Ads', 'Native Ads', 'Interstitial Ads'].forEach(type => {
-            let key = type.split(' ')[0].toLowerCase(); // video, banner, etc.
-            document.getElementById(`stat-${key}-count`).innerText = adStats[type].count;
-            document.getElementById(`stat-${key}-rev`).innerText = adStats[type].rev.toFixed(2);
-        });
-    }
-
-    // --- Ad Simulation System ---
-    function triggerAd(adType, callback) {
-        // Increment Stats
-        adStats[adType].count += 1;
-        adStats[adType].rev += REVENUE_PER_AD[adType];
-        
-        const overlay = document.getElementById('ad-overlay');
-        const adText = document.getElementById('ad-text');
-        const timerSpan = document.getElementById('ad-timer');
-        
-        adText.innerText = adType + " Playing";
-        overlay.style.display = 'flex';
-        
-        let timeLeft = 3; // 3 seconds mock ad
-        timerSpan.innerText = timeLeft;
-        
-        let interval = setInterval(() => {
-            timeLeft--;
-            timerSpan.innerText = timeLeft;
-            if(timeLeft <= 0) {
-                clearInterval(interval);
-                overlay.style.display = 'none';
-                if(callback) callback();
-            }
-        }, 1000);
-    }
-
-    // --- Main Menu logic ---
-    function playGameClick() {
-        triggerAd('Video Ads', () => {
-            nav('games-list-page');
-        });
-    }
-
-    // --- Game 1: Math Quiz ---
-    let currentAns = 0;
-    function startMathQuiz() {
-        triggerAd('Video Ads', () => {
-            generateMathQuestion();
-            nav('math-quiz-page');
-        });
-    }
-    function generateMathQuestion() {
-        let num1 = Math.floor(Math.random() * 20) + 1;
-        let num2 = Math.floor(Math.random() * 20) + 1;
-        let ops = ['+', '-', '*'];
-        let op = ops[Math.floor(Math.random() * ops.length)];
-        
-        if (op === '+') currentAns = num1 + num2;
-        if (op === '-') { if(num1 < num2) [num1, num2] = [num2, num1]; currentAns = num1 - num2; }
-        if (op === '*') { num1=num1%10; num2=num2%10; currentAns = num1 * num2; }
-        
-        document.getElementById('math-q').innerText = `${num1} ${op} ${num2} = ?`;
-        document.getElementById('math-ans').value = '';
-    }
-    function checkMath() {
-        let userAns = parseInt(document.getElementById('math-ans').value);
-        if(userAns === currentAns) {
-            triggerAd('Video Ads', () => {
-                alert("সঠিক উত্তর!");
-                generateMathQuestion();
-            });
-        } else {
-            alert("ভুল উত্তর, আবার চেষ্টা করুন।");
+    // --- Data Sheet Logic ---
+    function trackAd(type) {
+        if(stats[type] !== undefined) {
+            stats[type] += 1;
         }
     }
 
-    // --- Game 2: Spinner ---
-    let spinCount = 0;
-    const spinSequence = ['Video Ads', 'Native Ads', 'Banner Ads', 'Interstitial Ads'];
-    let isSpinning = false;
-
-    function startSpinner() {
-        triggerAd('Video Ads', () => { nav('spinner-page'); });
+    function updateDataSheetUI() {
+        document.getElementById('count-video').innerText = stats.video;
+        document.getElementById('rev-video').innerText = (stats.video * adRates.video).toFixed(2);
+        
+        document.getElementById('count-banner').innerText = stats.banner;
+        document.getElementById('rev-banner').innerText = (stats.banner * adRates.banner).toFixed(2);
+        
+        document.getElementById('count-native').innerText = stats.native;
+        document.getElementById('rev-native').innerText = (stats.native * adRates.native).toFixed(2);
+        
+        document.getElementById('count-inter').innerText = stats.inter;
+        document.getElementById('rev-inter').innerText = (stats.inter * adRates.inter).toFixed(2);
     }
-    function spinWheel() {
-        if(isSpinning) return;
-        isSpinning = true;
-        let wheel = document.getElementById('wheel');
-        let randomDegree = Math.floor(Math.random() * 360) + 720; // Spin multiple times
-        wheel.style.transform = `rotate(${randomDegree}deg)`;
+
+    function showMockAd(callback) {
+        const modal = document.getElementById('ad-modal');
+        modal.style.display = 'flex';
+        trackAd('video'); // Tracking as video ad
         
         setTimeout(() => {
-            let adToShow = spinSequence[spinCount % 4];
-            spinCount++;
-            triggerAd(adToShow, () => {
-                isSpinning = false;
-                wheel.style.transition = 'none';
-                wheel.style.transform = `rotate(0deg)`; // reset
-                setTimeout(() => wheel.style.transition = 'transform 2s ease-out', 50);
-            });
+            modal.style.display = 'none';
+            if (callback) callback();
+        }, 2000); // Ad plays for 2 seconds
+    }
+
+    function startMainGame() {
+        // Show rewarded ad, then open sub-menu automatically
+        showMockAd(() => {
+            navigate('submenu-page');
+        });
+    }
+
+    // --- 1. Math Quiz ---
+    let currentMathAns = 0;
+    function generateMathQuestion() {
+        const ops = ['+', '-', '*'];
+        const op = ops[Math.floor(Math.random() * ops.length)];
+        let n1 = Math.floor(Math.random() * 20) + 1;
+        let n2 = Math.floor(Math.random() * 10) + 1;
+        
+        if (op === '-') { if (n1 < n2) [n1, n2] = [n2, n1]; currentMathAns = n1 - n2; }
+        else if (op === '+') { currentMathAns = n1 + n2; }
+        else if (op === '*') { n1 = n1%10+1; n2 = n2%5+1; currentMathAns = n1 * n2; }
+
+        document.getElementById('math-question').innerText = `${n1} ${op} ${n2} = ?`;
+        document.getElementById('math-answer').value = '';
+    }
+
+    function checkMathAnswer() {
+        const userAns = parseInt(document.getElementById('math-answer').value);
+        if (userAns === currentMathAns) {
+            alert("সঠিক উত্তর!");
+            generateMathQuestion();
+        } else {
+            alert("ভুল উত্তর। আবার চেষ্টা করুন।");
+        }
+    }
+
+    // --- 2. Spinner ---
+    let spinCount = 0;
+    let isSpinning = false;
+    let currentRotation = 0;
+
+    function spinWheel() {
+        if (isSpinning) return;
+        isSpinning = true;
+        spinCount++;
+
+        // Sequence: Video(Red)->1, Native(Black)->2, Banner(Blue)->3, Interstitial(Orange)->4 -> Repeat
+        let targetDegrees = 0;
+        let adType = '';
+        const seq = spinCount % 4;
+
+        if (seq === 1) { 
+            targetDegrees = -45; // Points Top-Right to Red (Video Ads)
+            adType = 'video';
+        } else if (seq === 2) { 
+            targetDegrees = 45; // Points Top-Left to Black (Native Ads)
+            adType = 'native';
+        } else if (seq === 3) { 
+            targetDegrees = 135; // Points Bottom-Left to Blue (Banner Ads)
+            adType = 'banner';
+        } else if (seq === 0) { 
+            targetDegrees = 225; // Points Bottom-Right to Orange (Interstitial)
+            adType = 'inter';
+        }
+
+        // Add extra spins for visual effect
+        currentRotation += 720 + (targetDegrees - (currentRotation % 360));
+        
+        document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
+
+        setTimeout(() => {
+            isSpinning = false;
+            trackAd(adType); // Automatically update data sheet for this ad type
+            alert("অ্যাড ধরন: " + adType.toUpperCase());
         }, 2000);
     }
 
-    // --- Game 3: Read Book ---
-    let bookPage = 1;
-    let bookInterval;
+    // --- 3. Read Book ---
+    let bookTimer = null;
+    let pageNum = 1;
     function startBook() {
-        triggerAd('Video Ads', () => {
-            nav('book-page');
-            bookPage = 1;
-            document.getElementById('book-page-num').innerText = bookPage;
-            runBookLogic();
-        });
-    }
-    function runBookLogic() {
-        clearTimeout(bookInterval);
-        bookInterval = setTimeout(() => {
-            bookPage++;
-            if(bookPage % 2 !== 0) {
-                // Every other page show ad before next page
-                triggerAd('Video Ads', () => {
-                    document.getElementById('book-page-num').innerText = bookPage;
-                    runBookLogic();
-                });
-            } else {
-                document.getElementById('book-page-num').innerText = bookPage;
-                runBookLogic();
+        navigate('book-page');
+        pageNum = 1;
+        document.getElementById('book-page-num').innerText = pageNum;
+        if (bookTimer) clearInterval(bookTimer);
+        
+        bookTimer = setInterval(() => {
+            pageNum++;
+            document.getElementById('book-page-num').innerText = pageNum;
+            document.getElementById('book-text').innerText = `এটি পৃষ্ঠা নম্বর ${pageNum}। আপনি বইটি পড়ছেন। ২ সেকেন্ড পর স্বয়ংক্রিয়ভাবে পৃষ্ঠা পরিবর্তন হবে...`;
+            
+            // To stop memory leaks if user navigates away
+            if (!document.getElementById('book-page').classList.contains('active')) {
+                clearInterval(bookTimer);
             }
         }, 2000);
     }
 
-    // --- Game 4: Video ---
-    function startVideoGame() {
-        triggerAd('Video Ads', () => { nav('video-page'); });
-    }
-    function playInGameVideo() {
-        triggerAd('Video Ads', () => { nav('video-page'); });
-    }
-
-    // --- Game 5: Slide Show ---
-    function startSlideShow() {
-        triggerAd('Video Ads', () => {
-            document.getElementById('ad-slider').value = 0;
-            nav('slide-page');
-        });
-    }
-    function handleSlide() {
-        let val = document.getElementById('ad-slider').value;
-        if(val >= 90) {
+    // --- 5. Slide Show ---
+    function checkSlider() {
+        const val = document.getElementById('slider').value;
+        if (val == 100) {
             setTimeout(() => {
-                triggerAd('Video Ads', () => {
-                    document.getElementById('ad-slider').value = 0;
-                });
-            }, 1000);
+                alert("স্লাইড সম্পূর্ণ হয়েছে!");
+                document.getElementById('slider').value = 0;
+            }, 300);
         }
     }
-
 </script>
 </body>
 </html>
