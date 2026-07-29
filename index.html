@@ -1,200 +1,403 @@
-<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FF Nickname Generator</title>
+    <title>Ad Reward Games App</title>
     <style>
-        /* বেসিক স্টাইল এবং ডার্ক থিম (Free Fire Vibe) */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #1a1a2e;
-            color: #ffffff;
-            margin: 0;
-            padding: 20px;
-            text-align: center;
-        }
-        .container {
-            max-width: 500px;
-            margin: auto;
-            background: #16213e;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
-        h1 {
-            color: #f9a826;
-            text-transform: uppercase;
-            font-size: 24px;
-            margin-bottom: 20px;
-        }
-        input[type="text"] {
-            width: 90%;
-            padding: 12px;
-            margin-bottom: 20px;
-            border: 2px solid #0f3460;
-            border-radius: 8px;
-            font-size: 16px;
-            background: #1a1a2e;
-            color: white;
-            outline: none;
-        }
-        input[type="text"]:focus {
-            border-color: #e94560;
-        }
-        button.generate-btn {
-            background: #e94560;
-            color: white;
-            border: none;
-            padding: 14px 25px;
-            font-size: 18px;
-            border-radius: 8px;
-            cursor: pointer;
-            text-transform: uppercase;
-            font-weight: bold;
-            width: 100%;
-            transition: 0.3s;
-        }
-        button.generate-btn:hover {
-            background: #d83a50;
-        }
-        .ad-space {
-            margin: 20px 0;
-            padding: 10px;
-            background: #0f3460;
-            border-radius: 8px;
-            color: #a9a9a9;
-            font-size: 14px;
-            border: 1px dashed #a9a9a9;
-        }
-        .result-box {
-            margin-top: 20px;
-            text-align: left;
-        }
-        .name-item {
-            background: #0f3460;
-            margin: 12px 0;
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 18px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-left: 4px solid #f9a826;
-        }
-        .copy-btn {
-            background: #4caf50;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-        }
-        .copy-btn:hover {
-            background: #45a049;
-        }
-    </style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f4f6f9; color: #333; }
+        .container { max-width: 400px; margin: 0 auto; background: white; min-height: 100vh; position: relative; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .page { display: none; padding: 20px; }
+        .page.active { display: block; }
+        
+        /* Headers & Nav */
+        .header { display: flex; justify-content: space-between; align-items: center; background: #007bff; color: white; padding: 15px; }
+        .header button { background: #0056b3; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; }
+        
+        /* Inputs & Buttons */
+        input[type="text"], input[type="password"], input[type="number"] { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        .btn:hover { background: #218838; }
+        .btn-menu { background: #17a2b8; margin-bottom: 10px; }
+        
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background-color: #f2f2f2; }
 
-    <!-- Start.io Web Ads Script (এখানে আপনার Start.io স্ক্রিপ্ট বসাবেন) -->
-    <!-- উদাহরণ: <script src="https://start.io/your_ad_script.js"></script> -->
+        /* Game List styling */
+        .game-item { background: #e9ecef; padding: 15px; margin-bottom: 15px; border-radius: 5px; cursor: pointer; text-align: center; font-weight: bold; }
+        .banner-ad-placeholder { background: #ffc107; padding: 10px; text-align: center; margin-bottom: 15px; font-size: 12px; color: #333; border: 1px dashed #333; }
+
+        /* Spinner */
+        .spinner-container { position: relative; width: 250px; height: 250px; margin: 20px auto; border-radius: 50%; border: 5px solid #333; overflow: hidden; transition: transform 2s ease-out; }
+        .slice { position: absolute; width: 50%; height: 50%; transform-origin: 100% 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; text-align: center; }
+        .slice-1 { background: black; transform: rotate(0deg); }
+        .slice-2 { background: red; transform: rotate(90deg); }
+        .slice-3 { background: orange; transform: rotate(180deg); }
+        .slice-4 { background: blue; transform: rotate(270deg); }
+        .spin-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; background: white; border-radius: 50%; font-weight: bold; cursor: pointer; border: 2px solid #333; z-index: 10; }
+        .spin-btn::before { content: ''; position: absolute; top: -15px; left: 15px; border-width: 0 10px 20px 10px; border-style: solid; border-color: transparent transparent white transparent; }
+
+        /* Fake Ad Screen */
+        #ad-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); color: white; z-index: 9999; flex-direction: column; justify-content: center; align-items: center; }
+        
+        .slider-container { margin-top: 20px; }
+        input[type="range"] { width: 100%; }
+        
+        .book-content { padding: 20px; font-size: 14px; line-height: 1.6; background: #fff; border: 1px solid #ddd; margin-top: 20px; }
+    </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>FF Name Generator</h1>
-        
-        <input type="text" id="userName" placeholder="আপনার নাম লিখুন (যেমন: Ninja)">
-        
-        <button class="generate-btn" onclick="generateNames()">Generate 20 Names</button>
+<div class="container">
+    
+    <!-- Fullscreen Ad Overlay -->
+    <div id="ad-overlay">
+        <h2 id="ad-text">Loading Ad...</h2>
+        <p>অ্যাড চলছে, অনুগ্রহ করে অপেক্ষা করুন... (<span id="ad-timer">3</span>s)</p>
+    </div>
 
-        <!-- Start.io Banner Ad Space -->
-        <div class="ad-space" id="start-io-ad-banner">
-            <!-- Start.io এর ব্যানার অ্যাডের কোড এখানে পেস্ট করুন -->
-            Start.io Ad Banner
+    <!-- 1. Login Page -->
+    <div id="login-page" class="page active">
+        <h2 style="text-align: center;">অ্যাকাউন্ট তৈরি / লগইন</h2>
+        <input type="text" id="username" placeholder="ইউজার নেম">
+        <input type="password" id="password" placeholder="পাসওয়ার্ড">
+        <button class="btn" onclick="login()">লগইন করুন</button>
+    </div>
+
+    <!-- Header (Visible after login) -->
+    <div id="app-header" class="header" style="display: none;">
+        <button onclick="nav('profile-page')">প্রোফাইল</button>
+        <span style="font-weight: bold;">ড্যাশবোর্ড</span>
+        <button onclick="nav('datasheet-page')">Data Sheet</button>
+    </div>
+
+    <!-- 2. Main Menu -->
+    <div id="main-menu-page" class="page">
+        <button class="btn btn-menu" style="height: 100px; font-size: 24px;" onclick="playGameClick()">গেম খেলুন</button>
+    </div>
+
+    <!-- 3. Profile Page -->
+    <div id="profile-page" class="page">
+        <button onclick="nav('main-menu-page')">← ব্যাক</button>
+        <h2>আপনার প্রোফাইল</h2>
+        <p><strong>ইউজার নেম:</strong> <span id="disp-username"></span></p>
+        <p><strong>UID:</strong> <br><span id="disp-uid" style="word-break: break-all; font-family: monospace; color: blue;"></span></p>
+    </div>
+
+    <!-- 4. Data Sheet Page -->
+    <div id="datasheet-page" class="page">
+        <button onclick="nav('main-menu-page')">← ব্যাক</button>
+        <h2>Data Sheet</h2>
+        <table>
+            <tr>
+                <th>Ad Type</th>
+                <th>Count</th>
+                <th>Revenue ($)</th>
+            </tr>
+            <tr>
+                <td>Video Ads</td>
+                <td id="stat-video-count">0</td>
+                <td id="stat-video-rev">0.00</td>
+            </tr>
+            <tr>
+                <td>Banner Ads</td>
+                <td id="stat-banner-count">0</td>
+                <td id="stat-banner-rev">0.00</td>
+            </tr>
+            <tr>
+                <td>Native Ads</td>
+                <td id="stat-native-count">0</td>
+                <td id="stat-native-rev">0.00</td>
+            </tr>
+            <tr>
+                <td>Interstitial Ads</td>
+                <td id="stat-interstitial-count">0</td>
+                <td id="stat-interstitial-rev">0.00</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- 5. Games List Page -->
+    <div id="games-list-page" class="page">
+        <button onclick="nav('main-menu-page')">← ব্যাক</button>
+        <h3 style="text-align: center;">সাব-মেনু গেমস</h3>
+        
+        <div class="game-item" onclick="startMathQuiz()">১. ম্যাথ কুইজ</div>
+        <div class="banner-ad-placeholder">Banner Ad Space</div>
+
+        <div class="game-item" onclick="startSpinner()">২. স্পিন করুন</div>
+        <div class="banner-ad-placeholder">Banner Ad Space</div>
+
+        <div class="game-item" onclick="startBook()">৩. বই পড়ুন</div>
+        <div class="banner-ad-placeholder">Banner Ad Space</div>
+
+        <div class="game-item" onclick="startVideoGame()">৪. ভিডিও দেখুন</div>
+        <div class="banner-ad-placeholder">Banner Ad Space</div>
+
+        <div class="game-item" onclick="startSlideShow()">৫. স্লাইড শো</div>
+    </div>
+
+    <!-- Game 1: Math Quiz -->
+    <div id="math-quiz-page" class="page">
+        <button onclick="nav('games-list-page')">← ব্যাক</button>
+        <h2>ম্যাথ কুইজ</h2>
+        <div style="font-size: 24px; text-align: center; margin: 20px 0;">
+            <span id="math-q">2 + 2 = ?</span>
         </div>
+        <input type="number" id="math-ans" placeholder="উত্তর লিখুন">
+        <button class="btn" onclick="checkMath()">যাচাই করুন</button>
+    </div>
 
-        <div class="result-box" id="resultArea">
-            <!-- জেনারেট করা নামগুলো এখানে আসবে -->
+    <!-- Game 2: Spinner -->
+    <div id="spinner-page" class="page">
+        <button onclick="nav('games-list-page')">← ব্যাক</button>
+        <h2>স্পিন করুন</h2>
+        <div class="spinner-container" id="wheel">
+            <div class="slice slice-1"><span style="margin: 20px 0 0 20px;">Native Ads</span></div>
+            <div class="slice slice-2"><span style="margin: 20px 0 0 -20px;">Video Ads</span></div>
+            <div class="slice slice-3"><span style="margin: -20px 0 0 -20px;">Interstitial<br>Ads</span></div>
+            <div class="slice slice-4"><span style="margin: -20px 0 0 20px;">Banner Ads</span></div>
+            <button class="spin-btn" onclick="spinWheel()">Spin</button>
         </div>
     </div>
 
-    <script>
-        // বিভিন্ন সিম্বল এবং ফন্ট স্টাইল (১০০০+ কম্বিনেশন তৈরি করার জন্য)
-        const leftSymbols = ['꧁', '☠', '★', '♛', '【', '❖', '༄', '亗', 'V', '✿', '★彡', 'ॐ'];
-        const rightSymbols = ['꧂', '☠', '★', '♛', '】', '❖', '࿐', '亗', '✓', '✿', '彡★', 'ॐ'];
-        const midSymbols = ['•', '×', '♡', '━', '☆', 'ッ', '᭄', 'メ', '-', '≈'];
+    <!-- Game 3: Read Book -->
+    <div id="book-page" class="page">
+        <button onclick="nav('games-list-page')">← ব্যাক</button>
+        <h2>বই পড়ুন</h2>
+        <p>পৃষ্ঠা: <span id="book-page-num">১</span></p>
+        <div class="book-content" id="book-text">
+            এটি একটি ডেমো লেখা। ২ সেকেন্ড পর স্বয়ংক্রিয়ভাবে পৃষ্ঠা পরিবর্তন হবে।
+        </div>
+    </div>
+
+    <!-- Game 4: Watch Video -->
+    <div id="video-page" class="page">
+        <button onclick="nav('games-list-page')">← ব্যাক</button>
+        <h2>ভিডিও দেখুন</h2>
+        <button class="btn" style="height: 100px; font-size: 20px; background: red;" onclick="playInGameVideo()">ভিডিও</button>
+    </div>
+
+    <!-- Game 5: Slide Show -->
+    <div id="slide-page" class="page">
+        <button onclick="nav('games-list-page')">← ব্যাক</button>
+        <h2>স্লাইড শো</h2>
+        <p>বাম থেকে ডানে স্লাইড করুন:</p>
+        <div class="slider-container">
+            <input type="range" min="0" max="100" value="0" id="ad-slider" onchange="handleSlide()">
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // --- State Management ---
+    let currentUser = "";
+    let currentUID = "";
+    let adStats = {
+        'Video Ads': { count: 0, rev: 0 },
+        'Banner Ads': { count: 0, rev: 0 },
+        'Native Ads': { count: 0, rev: 0 },
+        'Interstitial Ads': { count: 0, rev: 0 }
+    };
+    
+    const REVENUE_PER_AD = {
+        'Video Ads': 0.05,
+        'Banner Ads': 0.01,
+        'Native Ads': 0.02,
+        'Interstitial Ads': 0.04
+    };
+
+    // --- Core Functions ---
+    function generateUID() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let result = 'UID-IP-'; // Prefix 
+        for (let i = 0; i < 20; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+    }
+
+    function nav(pageId) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(pageId).classList.add('active');
+        if(pageId === 'datasheet-page') updateDataSheet();
+    }
+
+    function login() {
+        const user = document.getElementById('username').value;
+        const pass = document.getElementById('password').value;
+        if(user.length < 3 || pass.length < 3) {
+            alert("সঠিক ইউজার নেম ও পাসওয়ার্ড দিন।"); return;
+        }
+        currentUser = user;
+        currentUID = generateUID();
         
-        // ফন্ট রূপান্তরের জন্য ম্যাপ
-        const fontStyles = {
-            'a': 'α', 'b': 'ß', 'c': '¢', 'd': '∂', 'e': 'є', 'f': 'ƒ', 'g': 'g', 'h': 'н', 
-            'i': 'ι', 'j': 'נ', 'k': 'к', 'l': 'ℓ', 'm': 'м', 'n': 'η', 'o': 'σ', 'p': 'ρ', 
-            'q': 'q', 'r': 'я', 's': 'ѕ', 't': 'т', 'u': 'υ', 'v': 'ν', 'w': 'ω', 'x': 'χ', 
-            'y': 'у', 'z': 'z'
-        };
+        document.getElementById('disp-username').innerText = currentUser;
+        document.getElementById('disp-uid').innerText = currentUID;
+        
+        document.getElementById('app-header').style.display = 'flex';
+        nav('main-menu-page');
+    }
 
-        function stylizeText(text) {
-            let result = '';
-            for (let char of text.toLowerCase()) {
-                result += fontStyles[char] || char;
+    function updateDataSheet() {
+        ['Video Ads', 'Banner Ads', 'Native Ads', 'Interstitial Ads'].forEach(type => {
+            let key = type.split(' ')[0].toLowerCase(); // video, banner, etc.
+            document.getElementById(`stat-${key}-count`).innerText = adStats[type].count;
+            document.getElementById(`stat-${key}-rev`).innerText = adStats[type].rev.toFixed(2);
+        });
+    }
+
+    // --- Ad Simulation System ---
+    function triggerAd(adType, callback) {
+        // Increment Stats
+        adStats[adType].count += 1;
+        adStats[adType].rev += REVENUE_PER_AD[adType];
+        
+        const overlay = document.getElementById('ad-overlay');
+        const adText = document.getElementById('ad-text');
+        const timerSpan = document.getElementById('ad-timer');
+        
+        adText.innerText = adType + " Playing";
+        overlay.style.display = 'flex';
+        
+        let timeLeft = 3; // 3 seconds mock ad
+        timerSpan.innerText = timeLeft;
+        
+        let interval = setInterval(() => {
+            timeLeft--;
+            timerSpan.innerText = timeLeft;
+            if(timeLeft <= 0) {
+                clearInterval(interval);
+                overlay.style.display = 'none';
+                if(callback) callback();
             }
-            return result;
+        }, 1000);
+    }
+
+    // --- Main Menu logic ---
+    function playGameClick() {
+        triggerAd('Video Ads', () => {
+            nav('games-list-page');
+        });
+    }
+
+    // --- Game 1: Math Quiz ---
+    let currentAns = 0;
+    function startMathQuiz() {
+        triggerAd('Video Ads', () => {
+            generateMathQuestion();
+            nav('math-quiz-page');
+        });
+    }
+    function generateMathQuestion() {
+        let num1 = Math.floor(Math.random() * 20) + 1;
+        let num2 = Math.floor(Math.random() * 20) + 1;
+        let ops = ['+', '-', '*'];
+        let op = ops[Math.floor(Math.random() * ops.length)];
+        
+        if (op === '+') currentAns = num1 + num2;
+        if (op === '-') { if(num1 < num2) [num1, num2] = [num2, num1]; currentAns = num1 - num2; }
+        if (op === '*') { num1=num1%10; num2=num2%10; currentAns = num1 * num2; }
+        
+        document.getElementById('math-q').innerText = `${num1} ${op} ${num2} = ?`;
+        document.getElementById('math-ans').value = '';
+    }
+    function checkMath() {
+        let userAns = parseInt(document.getElementById('math-ans').value);
+        if(userAns === currentAns) {
+            triggerAd('Video Ads', () => {
+                alert("সঠিক উত্তর!");
+                generateMathQuestion();
+            });
+        } else {
+            alert("ভুল উত্তর, আবার চেষ্টা করুন।");
         }
+    }
 
-        function generateNames() {
-            const nameInput = document.getElementById('userName').value.trim();
-            const baseName = nameInput === "" ? "Légèñd" : nameInput;
-            const resultArea = document.getElementById('resultArea');
-            resultArea.innerHTML = ''; // আগের রেজাল্ট ক্লিয়ার করা
+    // --- Game 2: Spinner ---
+    let spinCount = 0;
+    const spinSequence = ['Video Ads', 'Native Ads', 'Banner Ads', 'Interstitial Ads'];
+    let isSpinning = false;
 
-            for (let i = 0; i < 20; i++) {
-                // র‍্যান্ডম সিম্বল বেছে নেওয়া
-                const left = leftSymbols[Math.floor(Math.random() * leftSymbols.length)];
-                const right = rightSymbols[Math.floor(Math.random() * rightSymbols.length)];
-                const mid = midSymbols[Math.floor(Math.random() * midSymbols.length)];
+    function startSpinner() {
+        triggerAd('Video Ads', () => { nav('spinner-page'); });
+    }
+    function spinWheel() {
+        if(isSpinning) return;
+        isSpinning = true;
+        let wheel = document.getElementById('wheel');
+        let randomDegree = Math.floor(Math.random() * 360) + 720; // Spin multiple times
+        wheel.style.transform = `rotate(${randomDegree}deg)`;
+        
+        setTimeout(() => {
+            let adToShow = spinSequence[spinCount % 4];
+            spinCount++;
+            triggerAd(adToShow, () => {
+                isSpinning = false;
+                wheel.style.transition = 'none';
+                wheel.style.transform = `rotate(0deg)`; // reset
+                setTimeout(() => wheel.style.transition = 'transform 2s ease-out', 50);
+            });
+        }, 2000);
+    }
 
-                // নামের সাথে স্টাইল অ্যাপ্লাই করা
-                let isStylized = Math.random() > 0.5; // ৫০% চান্স ফন্ট চেঞ্জ হওয়ার
-                let finalBaseName = isStylized ? stylizeText(baseName) : baseName;
-
-                // নাম তৈরি করা
-                let finalName = "";
-                let patternType = Math.floor(Math.random() * 3);
-
-                if (patternType === 0) {
-                    finalName = `${left}${finalBaseName}${right}`;
-                } else if (patternType === 1) {
-                    finalName = `${left} ${finalBaseName} ${right}`;
-                } else {
-                    finalName = `${left}${finalBaseName}${mid}Pro${right}`;
-                }
-
-                // HTML এলিমেন্ট তৈরি করা
-                const nameDiv = document.createElement('div');
-                nameDiv.className = 'name-item';
-                
-                const nameText = document.createElement('span');
-                nameText.innerText = finalName;
-                
-                const copyBtn = document.createElement('button');
-                copyBtn.className = 'copy-btn';
-                copyBtn.innerText = 'Copy';
-                copyBtn.onclick = function() {
-                    navigator.clipboard.writeText(finalName);
-                    copyBtn.innerText = 'Copied!';
-                    copyBtn.style.background = '#e94560';
-                    setTimeout(() => {
-                        copyBtn.innerText = 'Copy';
-                        copyBtn.style.background = '#4caf50';
-                    }, 1500);
-                };
-
-                nameDiv.appendChild(nameText);
-                nameDiv.appendChild(copyBtn);
-                resultArea.appendChild(nameDiv);
+    // --- Game 3: Read Book ---
+    let bookPage = 1;
+    let bookInterval;
+    function startBook() {
+        triggerAd('Video Ads', () => {
+            nav('book-page');
+            bookPage = 1;
+            document.getElementById('book-page-num').innerText = bookPage;
+            runBookLogic();
+        });
+    }
+    function runBookLogic() {
+        clearTimeout(bookInterval);
+        bookInterval = setTimeout(() => {
+            bookPage++;
+            if(bookPage % 2 !== 0) {
+                // Every other page show ad before next page
+                triggerAd('Video Ads', () => {
+                    document.getElementById('book-page-num').innerText = bookPage;
+                    runBookLogic();
+                });
+            } else {
+                document.getElementById('book-page-num').innerText = bookPage;
+                runBookLogic();
             }
+        }, 2000);
+    }
+
+    // --- Game 4: Video ---
+    function startVideoGame() {
+        triggerAd('Video Ads', () => { nav('video-page'); });
+    }
+    function playInGameVideo() {
+        triggerAd('Video Ads', () => { nav('video-page'); });
+    }
+
+    // --- Game 5: Slide Show ---
+    function startSlideShow() {
+        triggerAd('Video Ads', () => {
+            document.getElementById('ad-slider').value = 0;
+            nav('slide-page');
+        });
+    }
+    function handleSlide() {
+        let val = document.getElementById('ad-slider').value;
+        if(val >= 90) {
+            setTimeout(() => {
+                triggerAd('Video Ads', () => {
+                    document.getElementById('ad-slider').value = 0;
+                });
+            }, 1000);
         }
-    </script>
+    }
+
+</script>
 </body>
 </html>
