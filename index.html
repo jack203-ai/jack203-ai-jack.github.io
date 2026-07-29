@@ -1,382 +1,346 @@
-
 <!DOCTYPE html>
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ad Reward Games App</title>
+    <title>Reward Games App</title>
     <style>
+        /* বেসিক স্টাইলিং ও অ্যাপ লেআউট */
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f0f2f5; color: #333; }
-        .container { max-width: 450px; margin: 0 auto; background: white; min-height: 100vh; position: relative; box-shadow: 0 0 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
-        .page { display: none; padding: 20px; flex-grow: 1; }
+        .app-container { max-width: 480px; margin: 0 auto; background: white; min-height: 100vh; position: relative; box-shadow: 0 0 15px rgba(0,0,0,0.1); overflow-x: hidden; }
+        .page { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
         .page.active { display: block; }
         
-        /* Navigation / Header */
-        .header { display: flex; justify-content: space-between; align-items: center; background: #4b6cb7; color: white; padding: 15px; }
-        .header button { background: #3a539b; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; }
-        .header button:hover { background: #2c4179; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* হেডার */
+        .header { display: flex; justify-content: space-between; align-items: center; background: #4caf50; color: white; padding: 15px; }
+        .header .profile-btn { background: #388e3c; color: white; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-weight: bold; }
         
-        /* Inputs & Buttons */
-        input[type="text"], input[type="password"], input[type="number"] { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 14px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 10px; font-weight: bold; }
-        .btn:hover { background: #218838; }
+        /* ইনপুট ও বাটন */
+        input[type="text"], input[type="password"], input[type="number"] { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        .btn { width: 100%; padding: 14px; background: #2196f3; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 10px; transition: background 0.2s; }
+        .btn:hover { background: #1976d2; }
+        .btn-back { background: #e0e0e0; color: #333; margin-bottom: 15px; width: auto; padding: 8px 15px; font-size: 14px; }
         
-        /* Main Menu */
-        .btn-main-game { background: #ff4757; height: 120px; font-size: 28px; border-radius: 10px; margin-top: 50px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s; }
-        .btn-main-game:active { transform: scale(0.95); }
+        /* গেম মেনু */
+        .menu-btn { height: 120px; font-size: 26px; background: #ff9800; border-radius: 15px; margin-top: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .sub-menu-table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+        .sub-menu-table td { background: #e3f2fd; padding: 15px; border-radius: 10px; text-align: center; font-size: 18px; font-weight: bold; cursor: pointer; border: 1px solid #bbdefb; }
 
-        /* Tables */
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        th, td { border: 1px solid #ddd; padding: 12px 8px; text-align: center; }
-        th { background-color: #f8f9fa; font-weight: bold; }
-
-        /* Sub Menu */
-        .sub-menu-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .sub-menu-table td { padding: 15px; border: 1px solid #ddd; text-align: center; font-size: 18px; font-weight: bold; cursor: pointer; background: #fdfdfd; transition: background 0.2s; }
-        .sub-menu-table td:hover { background: #f1f1f1; }
-
-        /* Spinner Game */
-        .wheel-container { position: relative; width: 260px; height: 260px; margin: 40px auto; border-radius: 50%; overflow: hidden; border: 4px solid #fff; box-shadow: 0 0 10px rgba(0,0,0,0.3); transition: transform 2s cubic-bezier(0.25, 1, 0.5, 1); }
-        .quadrant { position: absolute; width: 50%; height: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; text-align: center; padding: 10px; box-sizing: border-box; }
-        .q-black { background: black; top: 0; left: 0; } /* Native Ads */
-        .q-red { background: red; top: 0; left: 50%; } /* Video Ads */
-        .q-blue { background: blue; top: 50%; left: 0; } /* Banner Ads */
-        .q-orange { background: orange; top: 50%; left: 50%; } /* InterstitialvAds */
+        /* স্পিনার স্টাইল */
+        .spinner-wrapper { position: relative; width: 260px; height: 260px; margin: 30px auto; }
+        .wheel { width: 100%; height: 100%; border-radius: 50%; border: 5px solid #333; overflow: hidden; position: relative; transition: transform 1.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+            background: conic-gradient(
+                red 0deg 90deg, 
+                black 90deg 180deg, 
+                blue 180deg 270deg, 
+                orange 270deg 360deg
+            );
+        }
+        /* চাকার ভেতরের লেখা */
+        .wheel-text { position: absolute; width: 100px; height: 100px; text-align: center; color: white; font-weight: bold; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+        .text-video { top: 10px; left: 80px; transform: rotate(45deg); }
+        .text-native { top: 80px; right: 10px; transform: rotate(135deg); }
+        .text-banner { bottom: 10px; left: 80px; transform: rotate(225deg); }
+        .text-inter { top: 80px; left: 10px; transform: rotate(315deg); }
         
-        .wheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; background: white; border-radius: 50%; z-index: 10; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; color: #333; box-shadow: 0 0 5px rgba(0,0,0,0.3); }
-        .wheel-center::before { content: ''; position: absolute; top: -15px; left: 20px; border-width: 0 10px 20px 10px; border-style: solid; border-color: transparent transparent white transparent; }
+        .arrow-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; background: white; border-radius: 50%; z-index: 10; cursor: pointer; display: flex; justify-content: center; align-items: center; font-weight: bold; border: 3px solid #333; box-shadow: 0 0 10px rgba(0,0,0,0.3); }
+        .arrow-center::after { content: ''; position: absolute; top: -20px; left: 50%; transform: translateX(-50%); border-width: 0 15px 25px 15px; border-style: solid; border-color: transparent transparent white transparent; z-index: -1; }
 
-        /* Book Page */
-        .book-page-content { background: #fff; padding: 30px; min-height: 200px; border: 1px solid #ddd; margin-top: 20px; font-size: 16px; line-height: 1.6; text-align: justify; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); }
+        /* বই পড়া */
+        .book-content { padding: 20px; background: #fff9c4; border: 1px solid #fbc02d; border-radius: 10px; min-height: 200px; font-size: 18px; line-height: 1.6; text-align: justify; }
 
-        /* Slide Show */
-        .slider-wrapper { margin-top: 50px; padding: 20px; background: #fff; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        input[type="range"] { width: 100%; margin-top: 20px; }
+        /* স্লাইডার */
+        .slider-container { padding: 20px 0; }
+        input[type="range"] { width: 100%; height: 10px; border-radius: 5px; outline: none; background: #ddd; -webkit-appearance: none; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 25px; height: 25px; border-radius: 50%; background: #4caf50; cursor: pointer; }
 
-        /* Ad Screen Overlay */
-        #ad-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; }
-        .ad-loader { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #ff4757; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* Adsterra iframe container */
+        .ad-container { width: 100%; display: flex; justify-content: center; margin: 15px 0; overflow: hidden; background: #f9f9f9; padding: 5px 0; }
+        .ad-container iframe { max-width: 100%; height: auto; min-height: 250px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    
-    <!-- Header (Hidden on Login) -->
-    <div id="header" class="header" style="display: none;">
-        <button onclick="navigate('profile-page')">প্রোফাইল</button>
-        <span style="font-weight: bold; font-size: 18px;">ড্যাশবোর্ড</span>
-        <button onclick="navigate('datasheet-page')">Data Sheet</button>
-    </div>
+<div class="app-container">
 
-    <!-- 1. Login Page -->
+    <!-- 1. লগইন পেজ -->
     <div id="login-page" class="page active">
-        <h2 style="text-align: center; margin-top: 50px;">স্বাগতম</h2>
-        <p style="text-align: center; color: #666;">অ্যাকাউন্ট তৈরি বা লগইন করুন</p>
-        <input type="text" id="username" placeholder="ইউজার নেম লিখুন">
-        <input type="password" id="password" placeholder="পাসওয়ার্ড">
-        <button class="btn" onclick="doLogin()">লগইন / রেজিস্টার</button>
+        <h2 style="text-align: center; color: #4caf50; margin-top: 50px;">অ্যাকাউন্ট তৈরি / লগইন</h2>
+        <input type="text" id="username" placeholder="ইউজার নেম লিখুন" required>
+        <input type="password" id="password" placeholder="পাসওয়ার্ড লিখুন" required>
+        <button class="btn" onclick="login()">লগইন করুন</button>
+        
+        <!-- Adsterra Ad -->
+        <div class="ad-container" style="margin-top: 40px;">
+            <iframe src="https://www.effectivecpmnetwork.com/md81zvhi?key=8506414f0f2530f691d6edefcf713cfe" width="560" height="315" style="border:0;" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe> 
+        </div>
     </div>
 
-    <!-- 2. Main Menu -->
+    <!-- হেডার (লগইন এর পর দৃশ্যমান হবে) -->
+    <div id="app-header" class="header" style="display: none;">
+        <button class="profile-btn" onclick="nav('profile-page')">প্রোফাইল</button>
+        <span style="font-size: 18px; font-weight: bold;">ড্যাশবোর্ড</span>
+        <div style="width: 70px;"></div> <!-- ব্যালেন্সিং এর জন্য -->
+    </div>
+
+    <!-- 2. মেইন মেনু -->
     <div id="main-menu-page" class="page">
-        <button class="btn btn-main-game" onclick="startMainGame()">গেম খেলুন</button>
+        <button class="btn menu-btn" onclick="nav('games-list-page')">গেম খেলুন</button>
+
+        <div class="ad-container" style="margin-top: 30px;">
+            <iframe src="https://www.effectivecpmnetwork.com/md81zvhi?key=8506414f0f2530f691d6edefcf713cfe" width="560" height="315" style="border:0;" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe> 
+        </div>
     </div>
 
-    <!-- 3. Profile Page -->
+    <!-- প্রোফাইল পেজ -->
     <div id="profile-page" class="page">
-        <button class="btn" style="background: #6c757d; width: auto;" onclick="navigate('main-menu-page')">← ব্যাক</button>
-        <h2 style="margin-top: 20px;">আপনার প্রোফাইল</h2>
-        <div style="background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-            <p><strong>ইউজার নেম:</strong> <span id="prof-user"></span></p>
-            <p><strong>UID (Device based):</strong></p>
-            <p id="prof-uid" style="word-break: break-all; color: #007bff; font-family: monospace; background: #f4f6f9; padding: 10px; border-radius: 5px;"></p>
+        <button class="btn btn-back" onclick="nav('main-menu-page')">← ব্যাক</button>
+        <h2 style="text-align: center;">আপনার প্রোফাইল</h2>
+        <div style="background: #e0f7fa; padding: 20px; border-radius: 10px; margin-top: 20px;">
+            <p><strong>ইউজার নেম:</strong> <span id="disp-username" style="font-size: 18px;"></span></p>
+            <p><strong>UID:</strong> <br><span id="disp-uid" style="font-family: monospace; font-size: 16px; color: #00796b; word-break: break-all;"></span></p>
         </div>
     </div>
 
-    <!-- 4. Data Sheet Page -->
-    <div id="datasheet-page" class="page">
-        <button class="btn" style="background: #6c757d; width: auto;" onclick="navigate('main-menu-page')">← ব্যাক</button>
-        <h2 style="margin-top: 20px; text-align: center;">Data Sheet</h2>
-        <table id="stats-table">
-            <tr>
-                <th>Ad Type</th>
-                <th>Views</th>
-                <th>Revenue ($)</th>
-            </tr>
-            <tr>
-                <td>Video Ads</td>
-                <td id="count-video">0</td>
-                <td id="rev-video">0.00</td>
-            </tr>
-            <tr>
-                <td>Banner Ads</td>
-                <td id="count-banner">0</td>
-                <td id="rev-banner">0.00</td>
-            </tr>
-            <tr>
-                <td>Native Ads</td>
-                <td id="count-native">0</td>
-                <td id="rev-native">0.00</td>
-            </tr>
-            <tr>
-                <td>Interstitial Ads</td>
-                <td id="count-inter">0</td>
-                <td id="rev-inter">0.00</td>
-            </tr>
-        </table>
-    </div>
-
-    <!-- 5. Sub-menu Games List -->
-    <div id="submenu-page" class="page">
-        <button class="btn" style="background: #6c757d; width: auto;" onclick="navigate('main-menu-page')">← ব্যাক</button>
-        <h3 style="text-align: center; margin-top: 20px;">সাব-মেনু গেমস</h3>
+    <!-- গেমস সাব-মেনু -->
+    <div id="games-list-page" class="page">
+        <button class="btn btn-back" onclick="nav('main-menu-page')">← ব্যাক</button>
+        <h3 style="text-align: center; color: #333;">মাইক্রো কুইজ গেমস</h3>
+        
         <table class="sub-menu-table">
-            <tr><td onclick="navigate('math-page')">১. ম্যাথ কুইজ</td></tr>
-            <tr><td onclick="navigate('spin-page')">২. স্পিন করুন</td></tr>
+            <tr><td onclick="nav('math-quiz-page'); generateMath()">১. ম্যাথ কুইজ</td></tr>
+            <tr><td onclick="nav('spinner-page')">২. স্পিন করুন</td></tr>
             <tr><td onclick="startBook()">৩. বই পড়ুন</td></tr>
-            <tr><td onclick="navigate('video-game-page')">৪. ভিডিও দেখুন</td></tr>
-            <tr><td onclick="navigate('slide-page')">৫. স্লাইড শো</td></tr>
+            <tr><td onclick="nav('video-page')">৪. ভিডিও দেখুন</td></tr>
+            <tr><td onclick="nav('slide-page')">৫. স্লাইড শো</td></tr>
         </table>
     </div>
 
-    <!-- Game 1: Math Quiz -->
-    <div id="math-page" class="page">
-        <button class="btn" style="background: #6c757d; width: auto;" onclick="navigate('submenu-page')">← ব্যাক</button>
-        <h2 style="text-align: center;">ম্যাথ কুইজ</h2>
-        <div style="background: #fff; padding: 30px; text-align: center; border-radius: 10px; margin-top: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-            <div id="math-question" style="font-size: 32px; font-weight: bold; margin-bottom: 20px;"></div>
-            <input type="number" id="math-answer" placeholder="উত্তর লিখুন" style="text-align: center; font-size: 20px;">
-            <button class="btn" onclick="checkMathAnswer()">যাচাই করুন</button>
+    <!-- গেম ১: ম্যাথ কুইজ -->
+    <div id="math-quiz-page" class="page">
+        <button class="btn btn-back" onclick="nav('games-list-page')">← ব্যাক</button>
+        <h2>ম্যাথ কুইজ</h2>
+        
+        <div style="display: flex; justify-content: center; gap: 10px; font-size: 30px; font-weight: bold; margin: 30px 0;">
+            <div id="num1" style="padding: 15px; border: 2px solid #ccc; border-radius: 10px;">0</div>
+            <div id="operator" style="padding: 15px;">+</div>
+            <div id="num2" style="padding: 15px; border: 2px solid #ccc; border-radius: 10px;">0</div>
+        </div>
+        
+        <input type="number" id="math-answer" placeholder="ফলাফল লিখুন">
+        <button class="btn" style="background: #4caf50;" onclick="checkMath()">যাচাই করুন</button>
+    </div>
+
+    <!-- গেম ২: স্পিন করুন -->
+    <div id="spinner-page" class="page">
+        <button class="btn btn-back" onclick="nav('games-list-page')">← ব্যাক</button>
+        <h2>স্পিন করুন</h2>
+        <p style="text-align: center;">মাঝখানের বাটনে ক্লিক করুন</p>
+
+        <div class="spinner-wrapper">
+            <div class="wheel" id="spin-wheel">
+                <div class="wheel-text text-video">Video Ads</div>
+                <div class="wheel-text text-native">Native Ads</div>
+                <div class="wheel-text text-banner">Banner Ads</div>
+                <div class="wheel-text text-inter">InterstitialvAds</div>
+            </div>
+            <!-- স্থির তীর এবং বাটন -->
+            <div class="arrow-center" onclick="spinAction()">SPIN</div>
         </div>
     </div>
 
-    <!-- Game 2: Spin Wheel -->
-    <div id="spin-page" class="page">
-        <button class="btn" style="background: #6c757d; width: auto;" onclick="navigate('submenu-page')">← ব্যাক</button>
-        <h2 style="text-align: center;">স্পিন করুন</h2>
-        <div class="wheel-container" id="wheel">
-            <div class="quadrant q-black">Native Ads</div>
-            <div class="quadrant q-red">Video Ads</div>
-            <div class="quadrant q-blue">Banner Ads</div>
-            <div class="quadrant q-orange">InterstitialvAds</div>
-        </div>
-        <div class="wheel-center" onclick="spinWheel()">SPIN</div>
-    </div>
-
-    <!-- Game 3: Read Book -->
+    <!-- গেম ৩: বই পড়ুন -->
     <div id="book-page" class="page">
-        <button class="btn" style="background: #6c757d; width: auto;" onclick="navigate('submenu-page')">← মেনুতে ফিরুন</button>
-        <h2>বই পড়ুন (পৃষ্ঠা: <span id="book-page-num">১</span>)</h2>
-        <div class="book-page-content" id="book-text">
-            এটি একটি ডেমো লেখা। আপনি বইটি পড়ছেন। ২ সেকেন্ড পর স্বয়ংক্রিয়ভাবে পৃষ্ঠা পরিবর্তন হবে...
+        <button class="btn btn-back" onclick="stopBook(); nav('games-list-page')">← ব্যাক</button>
+        <h2>বই পড়ুন</h2>
+        <p>পৃষ্ঠা: <span id="page-num">১</span></p>
+        <div class="book-content" id="book-text">
+            এটি একটি ডেমো লেখা। ২ সেকেন্ড পর পর পৃষ্ঠা নিজে থেকে পরিবর্তন হবে এবং নতুন তথ্য আসবে।
+        </div>
+        <div class="ad-container">
+            <iframe src="https://www.effectivecpmnetwork.com/md81zvhi?key=8506414f0f2530f691d6edefcf713cfe" width="560" height="315" style="border:0;" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe> 
         </div>
     </div>
 
-    <!-- Game 4: Video Button -->
-    <div id="video-game-page" class="page">
-        <button class="btn" style="background: #6c757d; width: auto;" onclick="navigate('submenu-page')">← ব্যাক</button>
-        <h2 style="text-align: center; margin-top: 30px;">ভিডিও দেখুন</h2>
-        <button class="btn" style="background: #e1b12c; height: 100px; font-size: 24px; margin-top: 30px;" onclick="alert('ভিডিও প্লে হচ্ছে...')">ভিডিও</button>
+    <!-- গেম ৪: ভিডিও দেখুন -->
+    <div id="video-page" class="page">
+        <button class="btn btn-back" onclick="nav('games-list-page')">← ব্যাক</button>
+        <h2>ভিডিও দেখুন</h2>
+        <button class="btn" style="height: 100px; font-size: 24px; background: #f44336; border-radius: 15px;" onclick="playVideo()">▶ ভিডিও</button>
+        
+        <div id="video-ad-box" style="display: none; margin-top: 20px;">
+            <p style="text-align: center; color: green; font-weight: bold;">ভিডিও অ্যাড চলছে...</p>
+            <div class="ad-container">
+                <iframe src="https://www.effectivecpmnetwork.com/md81zvhi?key=8506414f0f2530f691d6edefcf713cfe" width="560" height="315" style="border:0;" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe> 
+            </div>
+        </div>
     </div>
 
-    <!-- Game 5: Slide Show -->
+    <!-- গেম ৫: স্লাইড শো -->
     <div id="slide-page" class="page">
-        <button class="btn" style="background: #6c757d; width: auto;" onclick="navigate('submenu-page')">← ব্যাক</button>
-        <h2 style="text-align: center;">স্লাইড শো</h2>
-        <div class="slider-wrapper">
-            <p style="text-align: center; font-weight: bold;">বাম থেকে ডানে স্লাইড করুন</p>
+        <button class="btn btn-back" onclick="nav('games-list-page')">← ব্যাক</button>
+        <h2>স্লাইড শো</h2>
+        <p>স্লাইডারটি বাম থেকে ডানে সরান:</p>
+        <div class="slider-container">
             <input type="range" min="0" max="100" value="0" id="slider" oninput="checkSlider()">
         </div>
-    </div>
-
-    <!-- Mock Ad Screen -->
-    <div id="ad-modal">
-        <div class="ad-loader"></div>
-        <h2>Rewarded Ad Playing...</h2>
-        <p>অ্যাডটি চলছে, দয়া করে অপেক্ষা করুন।</p>
+        <p id="slider-msg" style="text-align: center; color: #2196f3; font-weight: bold;"></p>
     </div>
 
 </div>
 
 <script>
-    // --- State Variables ---
-    let currentUser = "";
-    let currentUID = "";
-    
-    // Revenue rates per ad view
-    const adRates = { video: 0.05, banner: 0.01, native: 0.02, inter: 0.04 };
-    let stats = { video: 0, banner: 0, native: 0, inter: 0 };
+    // --- গ্লোবাল ভেরিয়েবল ---
+    let correctAnswer = 0;
+    let spinCount = 1;
+    let bookTimer;
+    let currentPage = 1;
 
-    // --- Core Functions ---
-    function navigate(pageId) {
-        document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+    // --- নেভিগেশন ---
+    function nav(pageId) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById(pageId).classList.add('active');
-        if (pageId === 'datasheet-page') updateDataSheetUI();
-        if (pageId === 'math-page') generateMathQuestion();
     }
 
+    // --- UID তৈরি এবং লগইন ---
     function generateUID() {
-        // Generating 20+ chars alphanumeric UID simulating IP hash
+        // ন্যূনতম ২০ অক্ষরের আলফানিউমেরিক আইডি তৈরি
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        let uid = 'UID' + Math.floor(Math.random() * 999) + 'X';
-        while (uid.length < 22) { uid += chars.charAt(Math.floor(Math.random() * chars.length)); }
+        let uid = 'IP-';
+        for (let i = 0; i < 22; i++) {
+            uid += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
         return uid;
     }
 
-    function doLogin() {
+    function login() {
         const user = document.getElementById('username').value.trim();
         const pass = document.getElementById('password').value.trim();
-        if (user.length < 2 || pass.length < 2) {
-            alert("অনুগ্রহ করে সঠিক ইউজার নেম ও পাসওয়ার্ড দিন।"); return;
+        
+        if(user === "" || pass === "") {
+            alert("অনুগ্রহ করে ইউজার নেম এবং পাসওয়ার্ড দিন।");
+            return;
         }
+
+        const newUid = generateUID();
         
-        currentUser = user;
-        currentUID = generateUID();
+        // প্রোফাইল পেজে ডেটা সেট করা
+        document.getElementById('disp-username').innerText = user;
+        document.getElementById('disp-uid').innerText = newUid;
         
-        document.getElementById('prof-user').innerText = currentUser;
-        document.getElementById('prof-uid').innerText = currentUID;
-        
-        document.getElementById('header').style.display = 'flex';
-        navigate('main-menu-page');
+        // হেডার শো করানো এবং মেইন পেজে যাওয়া
+        document.getElementById('app-header').style.display = 'flex';
+        nav('main-menu-page');
     }
 
-    // --- Data Sheet Logic ---
-    function trackAd(type) {
-        if(stats[type] !== undefined) {
-            stats[type] += 1;
-        }
-    }
+    // --- ম্যাথ কুইজ লজিক ---
+    function generateMath() {
+        const num1 = Math.floor(Math.random() * 50) + 1;
+        const num2 = Math.floor(Math.random() * 50) + 1;
+        const operators = ['+', '-', '×'];
+        const op = operators[Math.floor(Math.random() * operators.length)];
 
-    function updateDataSheetUI() {
-        document.getElementById('count-video').innerText = stats.video;
-        document.getElementById('rev-video').innerText = (stats.video * adRates.video).toFixed(2);
-        
-        document.getElementById('count-banner').innerText = stats.banner;
-        document.getElementById('rev-banner').innerText = (stats.banner * adRates.banner).toFixed(2);
-        
-        document.getElementById('count-native').innerText = stats.native;
-        document.getElementById('rev-native').innerText = (stats.native * adRates.native).toFixed(2);
-        
-        document.getElementById('count-inter').innerText = stats.inter;
-        document.getElementById('rev-inter').innerText = (stats.inter * adRates.inter).toFixed(2);
-    }
-
-    function showMockAd(callback) {
-        const modal = document.getElementById('ad-modal');
-        modal.style.display = 'flex';
-        trackAd('video'); // Tracking as video ad
-        
-        setTimeout(() => {
-            modal.style.display = 'none';
-            if (callback) callback();
-        }, 2000); // Ad plays for 2 seconds
-    }
-
-    function startMainGame() {
-        // Show rewarded ad, then open sub-menu automatically
-        showMockAd(() => {
-            navigate('submenu-page');
-        });
-    }
-
-    // --- 1. Math Quiz ---
-    let currentMathAns = 0;
-    function generateMathQuestion() {
-        const ops = ['+', '-', '*'];
-        const op = ops[Math.floor(Math.random() * ops.length)];
-        let n1 = Math.floor(Math.random() * 20) + 1;
-        let n2 = Math.floor(Math.random() * 10) + 1;
-        
-        if (op === '-') { if (n1 < n2) [n1, n2] = [n2, n1]; currentMathAns = n1 - n2; }
-        else if (op === '+') { currentMathAns = n1 + n2; }
-        else if (op === '*') { n1 = n1%10+1; n2 = n2%5+1; currentMathAns = n1 * n2; }
-
-        document.getElementById('math-question').innerText = `${n1} ${op} ${n2} = ?`;
+        document.getElementById('num1').innerText = num1;
+        document.getElementById('operator').innerText = op;
+        document.getElementById('num2').innerText = num2;
         document.getElementById('math-answer').value = '';
+
+        if(op === '+') correctAnswer = num1 + num2;
+        if(op === '-') correctAnswer = num1 - num2;
+        if(op === '×') correctAnswer = num1 * num2;
     }
 
-    function checkMathAnswer() {
-        const userAns = parseInt(document.getElementById('math-answer').value);
-        if (userAns === currentMathAns) {
-            alert("সঠিক উত্তর!");
-            generateMathQuestion();
+    function checkMath() {
+        const userAnswer = parseInt(document.getElementById('math-answer').value);
+        if(userAnswer === correctAnswer) {
+            alert("সঠিক উত্তর! ধন্যবাদ।");
+            generateMath(); // নতুন প্রশ্ন
         } else {
-            alert("ভুল উত্তর। আবার চেষ্টা করুন।");
+            alert("দুঃখিত, উত্তর ভুল হয়েছে। সঠিক উত্তর ছিল: " + correctAnswer);
+            generateMath();
         }
     }
 
-    // --- 2. Spinner ---
-    let spinCount = 0;
-    let isSpinning = false;
-    let currentRotation = 0;
-
-    function spinWheel() {
-        if (isSpinning) return;
-        isSpinning = true;
-        spinCount++;
-
-        // Sequence: Video(Red)->1, Native(Black)->2, Banner(Blue)->3, Interstitial(Orange)->4 -> Repeat
-        let targetDegrees = 0;
-        let adType = '';
-        const seq = spinCount % 4;
-
-        if (seq === 1) { 
-            targetDegrees = -45; // Points Top-Right to Red (Video Ads)
-            adType = 'video';
-        } else if (seq === 2) { 
-            targetDegrees = 45; // Points Top-Left to Black (Native Ads)
-            adType = 'native';
-        } else if (seq === 3) { 
-            targetDegrees = 135; // Points Bottom-Left to Blue (Banner Ads)
-            adType = 'banner';
-        } else if (seq === 0) { 
-            targetDegrees = 225; // Points Bottom-Right to Orange (Interstitial)
-            adType = 'inter';
-        }
-
-        // Add extra spins for visual effect
-        currentRotation += 720 + (targetDegrees - (currentRotation % 360));
+    // --- স্পিনার লজিক ---
+    function spinAction() {
+        const wheel = document.getElementById('spin-wheel');
+        // চাকাটি ঘুরবে, তীর স্থির থাকবে। 
+        // ১ম ক্লিক: Video Ads (Red) -> Arrow উপরে, wheel ঘুরাতে হবে 360-45 = 315deg
+        // ২য় ক্লিক: Native Ads (Black) -> 360-135 = 225deg
+        // ৩য় ক্লিক: Banner Ads (Blue) -> 360-225 = 135deg
+        // ৪র্থ ক্লিক: Interstitial (Orange) -> 360-315 = 45deg
         
-        document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
+        let extraSpins = 3 * 360; // ৩ বার সম্পূর্ণ ঘুরবে ইফেক্টের জন্য
+        let finalAngle = 0;
+        let adName = "";
+
+        if(spinCount === 1) { finalAngle = 315; adName = "Video Ads"; }
+        else if(spinCount === 2) { finalAngle = 225; adName = "Native Ads"; }
+        else if(spinCount === 3) { finalAngle = 135; adName = "Banner Ads"; }
+        else if(spinCount === 4) { finalAngle = 45; adName = "InterstitialvAds"; }
+
+        let totalRotation = extraSpins + finalAngle;
+        
+        // CSS রোটেশন অ্যাপ্লাই
+        wheel.style.transform = `rotate(${totalRotation}deg)`;
 
         setTimeout(() => {
-            isSpinning = false;
-            trackAd(adType); // Automatically update data sheet for this ad type
-            alert("অ্যাড ধরন: " + adType.toUpperCase());
-        }, 2000);
-    }
-
-    // --- 3. Read Book ---
-    let bookTimer = null;
-    let pageNum = 1;
-    function startBook() {
-        navigate('book-page');
-        pageNum = 1;
-        document.getElementById('book-page-num').innerText = pageNum;
-        if (bookTimer) clearInterval(bookTimer);
-        
-        bookTimer = setInterval(() => {
-            pageNum++;
-            document.getElementById('book-page-num').innerText = pageNum;
-            document.getElementById('book-text').innerText = `এটি পৃষ্ঠা নম্বর ${pageNum}। আপনি বইটি পড়ছেন। ২ সেকেন্ড পর স্বয়ংক্রিয়ভাবে পৃষ্ঠা পরিবর্তন হবে...`;
+            alert(adName + " অংশে পড়েছে!");
             
-            // To stop memory leaks if user navigates away
-            if (!document.getElementById('book-page').classList.contains('active')) {
-                clearInterval(bookTimer);
-            }
-        }, 2000);
+            // রোটেশন রিসেট করা (যাতে পরেরবার স্মুথলি ঘুরে)
+            wheel.style.transition = 'none';
+            wheel.style.transform = `rotate(${finalAngle}deg)`;
+            setTimeout(() => { wheel.style.transition = 'transform 1.5s cubic-bezier(0.25, 0.1, 0.25, 1)'; }, 50);
+
+            // কাউন্ট আপডেট
+            spinCount++;
+            if(spinCount > 4) spinCount = 1;
+
+        }, 1500); // 1.5 সেকেন্ড স্পিন এনিমেশন টাইম
     }
 
-    // --- 5. Slide Show ---
+    // --- বই পড়া লজিক ---
+    function startBook() {
+        nav('book-page');
+        currentPage = 1;
+        document.getElementById('page-num').innerText = currentPage;
+        runBookLoop();
+    }
+    
+    function runBookLoop() {
+        bookTimer = setInterval(() => {
+            currentPage++;
+            document.getElementById('page-num').innerText = currentPage;
+            document.getElementById('book-text').innerText = "এটি বইয়ের পৃষ্ঠা নম্বর " + currentPage + "। প্রতি ২ সেকেন্ড পর এটি পরিবর্তন হচ্ছে।";
+        }, 2000);
+    }
+    
+    function stopBook() {
+        clearInterval(bookTimer);
+    }
+
+    // --- ভিডিও দেখুন লজিক ---
+    function playVideo() {
+        document.getElementById('video-ad-box').style.display = 'block';
+        setTimeout(() => {
+            document.getElementById('video-ad-box').style.display = 'none';
+            alert("ভিডিও দেখা শেষ হয়েছে।");
+        }, 5000); // ৫ সেকেন্ড ডেমো টাইম
+    }
+
+    // --- স্লাইডার লজিক ---
     function checkSlider() {
-        const val = document.getElementById('slider').value;
-        if (val == 100) {
+        let val = document.getElementById('slider').value;
+        if(val == 100) {
+            document.getElementById('slider-msg').innerText = "স্লাইড সম্পন্ন হয়েছে!";
             setTimeout(() => {
-                alert("স্লাইড সম্পূর্ণ হয়েছে!");
                 document.getElementById('slider').value = 0;
-            }, 300);
+                document.getElementById('slider-msg').innerText = "";
+            }, 2000);
+        } else {
+            document.getElementById('slider-msg').innerText = "";
         }
     }
 </script>
