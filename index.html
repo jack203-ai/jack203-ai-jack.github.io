@@ -67,6 +67,7 @@
         .btn-monetag { background-color: #2ed573; }
         .btn-adsterra { background-color: #ff4757; }
         .btn-startio { background-color: #9b59b6; }
+        .btn-unity { background-color: #2c3e50; } /* Unity Ads Button Color */
         
         .btn-back { background-color: #747d8c; }
         .btn-save { background-color: #007bff; }
@@ -87,8 +88,8 @@
             border-color: #007bff;
         }
 
-        /* Start.io Fullscreen Ad Container */
-        #startio-viewer {
+        /* Fullscreen Ad Containers */
+        #startio-viewer, #unity-viewer {
             background-color: #000;
             color: white;
             width: 100%;
@@ -99,11 +100,11 @@
             justify-content: center;
             position: relative;
         }
-        #startio-viewer.active {
+        #startio-viewer.active, #unity-viewer.active {
             display: flex;
         }
 
-        #ad-container {
+        .ad-container {
             margin-top: 20px;
             width: 100%;
             height: 100%;
@@ -122,13 +123,20 @@
         <button class="btn-monetag" onclick="handleNetwork('MoneTag')">MoneTag</button>
         <button class="btn-adsterra" onclick="handleNetwork('Adsterra')">Adsterra</button>
         <button class="btn-startio" onclick="handleNetwork('Start.io')">Start.io</button>
+        <button class="btn-unity" onclick="handleNetwork('Unity Ads')">Unity Ads</button>
     </div>
 
     <!-- 2. Setup Page -->
     <div id="setup-page" class="page">
         <h2 id="setup-title">Setup</h2>
         <p class="info-text" id="setup-desc">Provide the required details below.</p>
+        
+        <!-- Input 1: For URL, Start.io App ID, or Unity Game ID -->
         <input type="text" id="ad-input" placeholder="Enter here..." required>
+        
+        <!-- Input 2: Exclusively for Unity Placement ID (Hidden by default) -->
+        <input type="text" id="ad-input-2" placeholder="Enter Placement ID..." style="display: none;">
+
         <button class="btn-save" onclick="saveAndShowAd()">Save & Show Ad</button>
         <button class="btn-back" onclick="showPage('main-menu')">Back to Menu</button>
     </div>
@@ -137,9 +145,17 @@
     <div id="startio-viewer" class="page">
         <h3>Loading Start.io Ad...</h3>
         <p style="color: #ccc; font-size: 14px;">App ID: <span id="display-app-id"></span></p>
-        
-        <!-- এই কন্টেইনারের ভেতরে ডাইনামিক্যালি অ্যাড স্ক্রিপ্ট রান করবে -->
-        <div id="ad-container"></div>
+        <div id="startio-container" class="ad-container"></div>
+    </div>
+
+    <!-- 4. Unity Ads Viewer Page (NO Back/Cross Button) -->
+    <div id="unity-viewer" class="page">
+        <h3>Loading Unity Ad...</h3>
+        <p style="color: #ccc; font-size: 14px;">Game ID: <span id="display-unity-gameid"></span></p>
+        <p style="color: #ccc; font-size: 14px;">Placement ID: <span id="display-unity-placementid"></span></p>
+        <div id="unity-container" class="ad-container">
+            <p style="color: #2ed573; font-size: 14px;">Waiting for Unity Web SDK to render...</p>
+        </div>
     </div>
 
     <script>
@@ -154,54 +170,96 @@
         // Handle Network Clicks
         function handleNetwork(networkName) {
             currentNetwork = networkName;
-            
-            const storageKey = (networkName === 'Start.io') ? 'Start.io_appid' : networkName + '_link';
-            const savedData = localStorage.getItem(storageKey);
+            const inputField = document.getElementById('ad-input');
+            const inputField2 = document.getElementById('ad-input-2');
+            const descText = document.getElementById('setup-desc');
 
-            if (savedData) {
-                if (networkName === 'Start.io') {
-                    openStartIoAd(savedData);
-                } else {
-                    openAd(savedData);
-                }
-            } else {
-                document.getElementById('setup-title').innerText = networkName + " Setup";
-                const inputField = document.getElementById('ad-input');
-                const descText = document.getElementById('setup-desc');
+            // Hide the second input field by default
+            inputField2.style.display = 'none';
 
-                if (networkName === 'Start.io') {
-                    descText.innerText = "Paste your Start.io App ID below. You only need to save this once.";
-                    inputField.placeholder = "Enter App ID (e.g., 201234567)";
-                    inputField.type = "text"; 
-                } else {
-                    descText.innerText = "Paste your advertiser direct link below. You only need to save this once.";
-                    inputField.placeholder = "https://example.com/direct-link";
-                    inputField.type = "url";
+            // Custom Logic for Unity Ads
+            if (networkName === 'Unity Ads') {
+                const savedGameId = localStorage.getItem('Unity_gameid');
+                const savedPlacementId = localStorage.getItem('Unity_placementid');
+
+                if (savedGameId && savedPlacementId) {
+                    openUnityAd(savedGameId, savedPlacementId);
+                    return;
                 }
+
+                document.getElementById('setup-title').innerText = "Unity Ads Setup";
+                descText.innerText = "Paste your Unity Game ID and Placement ID below.";
                 
+                inputField.placeholder = "Enter Unity Game ID (e.g., 1234567)";
+                inputField.type = "text";
                 inputField.value = "";
+                
+                // Show second input box for Placement ID
+                inputField2.placeholder = "Enter Placement ID (e.g., rewardedVideo)";
+                inputField2.type = "text";
+                inputField2.value = "";
+                inputField2.style.display = 'block'; 
+
                 showPage('setup-page');
+
+            } else {
+                // Logic for Start.io, Adsterra, MoneTag
+                const storageKey = (networkName === 'Start.io') ? 'Start.io_appid' : networkName + '_link';
+                const savedData = localStorage.getItem(storageKey);
+
+                if (savedData) {
+                    if (networkName === 'Start.io') {
+                        openStartIoAd(savedData);
+                    } else {
+                        openAd(savedData);
+                    }
+                } else {
+                    document.getElementById('setup-title').innerText = networkName + " Setup";
+
+                    if (networkName === 'Start.io') {
+                        descText.innerText = "Paste your Start.io App ID below.";
+                        inputField.placeholder = "Enter App ID (e.g., 201234567)";
+                        inputField.type = "text"; 
+                    } else {
+                        descText.innerText = "Paste your advertiser direct link below.";
+                        inputField.placeholder = "https://example.com/direct-link";
+                        inputField.type = "url";
+                    }
+                    
+                    inputField.value = "";
+                    showPage('setup-page');
+                }
             }
         }
 
         // Save Input and Show Ad
         function saveAndShowAd() {
             const inputValue = document.getElementById('ad-input').value.trim();
+            const inputValue2 = document.getElementById('ad-input-2').value.trim();
             
             if(inputValue === "") {
-                alert("Please enter a valid Link or App ID!");
+                alert("Please enter the required information!");
                 return;
             }
 
-            if(currentNetwork !== 'Start.io' && !inputValue.startsWith("http")) {
-                alert("Please enter a valid link starting with http:// or https://");
-                return;
-            }
+            if (currentNetwork === 'Unity Ads') {
+                if (inputValue2 === "") {
+                    alert("Please enter the Placement ID!");
+                    return;
+                }
+                localStorage.setItem('Unity_gameid', inputValue);
+                localStorage.setItem('Unity_placementid', inputValue2);
+                openUnityAd(inputValue, inputValue2);
 
-            if(currentNetwork === 'Start.io') {
+            } else if (currentNetwork === 'Start.io') {
                 localStorage.setItem('Start.io_appid', inputValue);
                 openStartIoAd(inputValue);
+                
             } else {
+                if(!inputValue.startsWith("http")) {
+                    alert("Please enter a valid link starting with http:// or https://");
+                    return;
+                }
                 localStorage.setItem(currentNetwork + '_link', inputValue);
                 showPage('main-menu');
                 openAd(inputValue);
@@ -218,27 +276,31 @@
             document.getElementById('display-app-id').innerText = appId;
             showPage('startio-viewer');
 
-            const adContainer = document.getElementById('ad-container');
-            
-            // আগের কোনো স্ক্রিপ্ট থাকলে ক্লিয়ার করে দেওয়া হচ্ছে
+            const adContainer = document.getElementById('startio-container');
             adContainer.innerHTML = '';
 
-            // 1. App ID সেট করার জন্য স্ক্রিপ্ট
             const configScript = document.createElement('script');
             configScript.type = 'text/javascript';
-            configScript.innerHTML = `
-                var startapp_publisher_id = "${appId}";
-            `;
+            configScript.innerHTML = `var startapp_publisher_id = "${appId}";`;
 
-            // 2. Start.io এর মেইন অ্যাড লোডার স্ক্রিপ্ট
             const loaderScript = document.createElement('script');
             loaderScript.type = 'text/javascript';
             loaderScript.async = true;
-            loaderScript.src = "https://w.startappservice.com/startapp.js"; // Start.io Web SDK
+            loaderScript.src = "https://w.startappservice.com/startapp.js"; 
 
-            // স্ক্রিপ্টগুলো কন্টেইনারে ইনজেক্ট করা হচ্ছে
             adContainer.appendChild(configScript);
             adContainer.appendChild(loaderScript);
+        }
+
+        // Unity Ads Screen Handler
+        function openUnityAd(gameId, placementId) {
+            document.getElementById('display-unity-gameid').innerText = gameId;
+            document.getElementById('display-unity-placementid').innerText = placementId;
+            showPage('unity-viewer');
+            
+            // Note: Unity Web Ads SDK or web-to-app bridge logic would go here.
+            // Since Unity is mostly native (Android/iOS SDK), this sets up the layout 
+            // and simulates the environment for WebView to intercept or web SDK to load.
         }
     </script>
 </body>
