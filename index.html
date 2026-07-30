@@ -1,643 +1,159 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Micro Games App</title>
-  <style>
-    :root {
-      --bg-color: #0f172a;
-      --card-bg: #1e293b;
-      --accent: #3b82f6;
-      --accent-hover: #2563eb;
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --border: #334155;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ad Viewer App</title>
+    <style>
+        /* Basic Styling */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
+        /* Page Transitions */
+        .page {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+        }
+        .active {
+            display: flex;
+        }
 
-    body {
-      background-color: var(--bg-color);
-      color: var(--text);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 16px;
-    }
+        /* Text and Button Design */
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        p.info-text {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
+            max-width: 300px;
+        }
+        
+        button {
+            padding: 15px 30px;
+            margin: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            width: 100%;
+            max-width: 300px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: 0.3s;
+        }
+        
+        button:active {
+            transform: scale(0.98);
+        }
 
-    .app-container {
-      width: 100%;
-      max-width: 420px;
-      background-color: var(--card-bg);
-      border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-      border: 1px solid var(--border);
-      overflow: hidden;
-      position: relative;
-      min-height: 600px;
-      display: flex;
-      flex-direction: column;
-    }
+        .btn-adsterra { background-color: #ff4757; }
+        .btn-monetag { background-color: #2ed573; }
+        .btn-back { background-color: #747d8c; }
+        .btn-save { background-color: #007bff; }
 
-    /* Header & Profile */
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 16px;
-      background-color: rgba(15, 23, 42, 0.6);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .profile-btn, .back-btn {
-      background: var(--accent);
-      color: white;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    /* Page Views */
-    .page {
-      display: none;
-      padding: 20px;
-      flex: 1;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-    }
-
-    .page.active {
-      display: flex;
-    }
-
-    /* Forms & Inputs */
-    .input-group {
-      width: 100%;
-      margin-bottom: 16px;
-      text-align: left;
-    }
-
-    .input-group label {
-      display: block;
-      margin-bottom: 6px;
-      font-size: 14px;
-      color: var(--text-muted);
-    }
-
-    .input-group input {
-      width: 100%;
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background-color: var(--bg-color);
-      color: var(--text);
-      font-size: 16px;
-    }
-
-    .btn-main {
-      width: 100%;
-      padding: 14px;
-      background-color: var(--accent);
-      color: white;
-      border: none;
-      border-radius: 10px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .btn-main:hover {
-      background-color: var(--accent-hover);
-    }
-
-    /* Game Selection Table */
-    .game-table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0 10px;
-    }
-
-    .game-table td {
-      background: var(--bg-color);
-      padding: 14px;
-      border-radius: 10px;
-      font-weight: 600;
-      cursor: pointer;
-      border: 1px solid var(--border);
-      transition: transform 0.1s, border-color 0.2s;
-    }
-
-    .game-table td:hover {
-      border-color: var(--accent);
-      transform: translateY(-2px);
-    }
-
-    /* Spinner Widget */
-    .wheel-wrapper {
-      position: relative;
-      width: 220px;
-      height: 220px;
-      margin: 20px 0;
-    }
-
-    .wheel {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      background: conic-gradient(
-        #000000 0deg 90deg,
-        #ef4444 90deg 180deg,
-        #f97316 180deg 270deg,
-        #3b82f6 270deg 360deg
-      );
-      transition: transform 3s cubic-bezier(0.15, 0.85, 0.35, 1.2);
-    }
-
-    .wheel-center {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 60px;
-      height: 60px;
-      background: white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-      z-index: 10;
-    }
-
-    .wheel-arrow {
-      position: absolute;
-      top: -12px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 0;
-      height: 0;
-      border-left: 10px solid transparent;
-      border-right: 10px solid transparent;
-      border-bottom: 20px solid white;
-    }
-
-    /* Math Quiz UI */
-    .quiz-box {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-
-    .num-box {
-      background: var(--bg-color);
-      padding: 16px 20px;
-      border-radius: 10px;
-      font-size: 24px;
-      font-weight: bold;
-      border: 1px solid var(--border);
-    }
-
-    /* Banner Ad Placement Placeholder */
-    .banner-ad-container {
-      width: 100%;
-      padding: 12px;
-      margin-top: auto;
-      background: rgba(255, 255, 255, 0.05);
-      border-top: 1px dashed var(--border);
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    /* Modal Overlay for Simulated Ads */
-    .ad-modal {
-      display: none;
-      position: absolute;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.92);
-      z-index: 100;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-
-    .ad-modal.active {
-      display: flex;
-    }
-
-    /* Slide Bar */
-    .slide-container {
-      width: 100%;
-      margin: 30px 0;
-    }
-
-    .slider {
-      width: 100%;
-      height: 15px;
-      border-radius: 8px;
-      background: var(--border);
-      outline: none;
-    }
-  </style>
+        input {
+            padding: 15px;
+            width: 100%;
+            max-width: 300px;
+            margin-bottom: 20px;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+            box-sizing: border-box;
+        }
+        
+        input:focus {
+            border-color: #007bff;
+        }
+    </style>
 </head>
 <body>
 
-<div class="app-container">
-  <!-- Top Navigation Header -->
-  <div class="header" id="appHeader" style="display: none;">
-    <button class="profile-btn" onclick="openProfile()">Profile</button>
-    <button class="back-btn" id="backBtn" style="display:none;" onclick="showPage('gameMenu')">Home</button>
-  </div>
-
-  <!-- Page 1: Account Creation / Login -->
-  <div class="page active" id="loginPage">
-    <h2 style="margin-bottom: 20px;">Create Account</h2>
-    <div class="input-group">
-      <label for="username">Username</label>
-      <input type="text" id="username" placeholder="Enter username">
+    <!-- 1. Main Menu Page -->
+    <div id="main-menu" class="page active">
+        <h2>Ad Network Menu</h2>
+        <p class="info-text">Click on any network below to view ads. Press your phone's Back button when you are done to return here.</p>
+        <button class="btn-monetag" onclick="handleNetwork('MoneTag')">MoneTag</button>
+        <button class="btn-adsterra" onclick="handleNetwork('Adsterra')">Adsterra</button>
     </div>
-    <div class="input-group">
-      <label for="password">Password</label>
-      <input type="password" id="password" placeholder="Enter password">
+
+    <!-- 2. Link Setup Page (Shows only the first time) -->
+    <div id="setup-page" class="page">
+        <h2 id="setup-title">Setup Link</h2>
+        <p class="info-text">Paste your advertiser direct link below. You only need to save this once.</p>
+        <input type="url" id="ad-link-input" placeholder="https://example.com/direct-link" required>
+        <button class="btn-save" onclick="saveAndShowAd()">Save & Show Ad</button>
+        <button class="btn-back" onclick="showPage('main-menu')">Back to Menu</button>
     </div>
-    <button class="btn-main" onclick="handleAuth()">Login / Register</button>
-  </div>
 
-  <!-- Page 2: Profile Page -->
-  <div class="page" id="profilePage">
-    <h2>User Profile</h2>
-    <div style="margin: 20px 0; text-align: left; width: 100%;">
-      <p style="margin-bottom: 10px;"><strong>Username:</strong> <span id="profUsername"></span></p>
-      <p style="word-break: break-all;"><strong>UID:</strong> <span id="profUID"></span></p>
-    </div>
-    <button class="btn-main" onclick="showPage('gameMenu')">Back to Games</button>
-  </div>
+    <script>
+        let currentNetwork = ''; // Stores the currently clicked network
 
-  <!-- Page 3: Main Landing Menu -->
-  <div class="page" id="mainLandingPage">
-    <h1 style="margin-bottom: 30px;">Welcome Game</h1>
-    <button class="btn-main" onclick="handlePlayGameClick()">Play Game</button>
-  </div>
-
-  <!-- Page 4: Game Menu (Micro-Quiz Selection) -->
-  <div class="page" id="gameMenu">
-    <h3 style="margin-bottom: 16px;">Select a Game</h3>
-    <table class="game-table">
-      <tr><td onclick="startSubGame('math')">Math Quiz</td></tr>
-      <tr><td onclick="startSubGame('spin')">Spin</td></tr>
-      <tr><td onclick="startSubGame('read')">Read Book</td></tr>
-      <tr><td onclick="startSubGame('watch')">Watch Video</td></tr>
-      <tr><td onclick="startSubGame('slide')">Slide Show</td></tr>
-    </table>
-  </div>
-
-  <!-- Sub-menu 1: Math Quiz -->
-  <div class="page" id="gameMath">
-    <h3>Math Quiz</h3>
-    <div style="margin: 20px 0;">
-      <div class="quiz-box">
-        <div class="num-box" id="mathNum1">0</div>
-        <span id="mathOperator" style="font-size: 20px; font-weight: bold;">+</span>
-        <div class="num-box" id="mathNum2">0</div>
-        <span style="font-size: 20px; font-weight: bold;">=</span>
-      </div>
-      <div class="input-group">
-        <input type="number" id="mathAnswer" placeholder="Your Answer">
-      </div>
-      <button class="btn-main" onclick="verifyMathAnswer()">Submit Answer</button>
-    </div>
-    <div class="banner-ad-container" id="banner-math">
-      Banner Ad (Placement: Banner_Android | Game ID: YOUR_UNITYADS_GAME_ID)
-    </div>
-  </div>
-
-  <!-- Sub-menu 2: Spinner -->
-  <div class="page" id="gameSpin">
-    <h3>Wheel Spin</h3>
-    <div class="wheel-wrapper">
-      <div class="wheel-arrow"></div>
-      <div class="wheel" id="wheel"></div>
-      <div class="wheel-center" onclick="triggerSpin()">
-        <span style="font-size: 12px; font-weight: bold; color: black;">SPIN</span>
-      </div>
-    </div>
-    <div class="banner-ad-container" id="banner-spin">
-      Banner Ad (Placement: Banner_Android | Game ID: YOUR_UNITYADS_GAME_ID)
-    </div>
-  </div>
-
-  <!-- Sub-menu 3: Read Book -->
-  <div class="page" id="gameRead">
-    <h3>Read Book</h3>
-    <div style="margin: 20px 0; line-height: 1.6; min-height: 120px;" id="bookContent">
-      Reading content page 1...
-    </div>
-    <div class="banner-ad-container" id="banner-read">
-      Banner Ad (Placement: Banner_Android | Game ID: YOUR_UNITYADS_GAME_ID)
-    </div>
-  </div>
-
-  <!-- Sub-menu 4: Watch Video -->
-  <div class="page" id="gameWatch">
-    <h3>Watch Video</h3>
-    <div style="margin: 30px 0; width: 100%;">
-      <button class="btn-main" onclick="handleWatchVideoClick()">Video</button>
-    </div>
-    <div class="banner-ad-container" id="banner-watch">
-      Banner Ad (Placement: Banner_Android | Game ID: YOUR_UNITYADS_GAME_ID)
-    </div>
-  </div>
-
-  <!-- Sub-menu 5: Slide Show -->
-  <div class="page" id="gameSlide">
-    <h3>Slide Show</h3>
-    <div class="slide-container">
-      <input type="range" min="0" max="100" value="0" class="slider" id="gameSlider" oninput="handleSlide(this.value)">
-    </div>
-    <div class="banner-ad-container" id="banner-slide">
-      Banner Ad (Placement: Banner_Android | Game ID: YOUR_UNITYADS_GAME_ID)
-    </div>
-  </div>
-
-  <!-- Ad Modal Overlay -->
-  <div class="ad-modal" id="adModal">
-    <h3 id="adTitle" style="color: #4ade80; margin-bottom: 10px;">Showing Ad...</h3>
-    <p id="adDetails" style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;"></p>
-    <div id="adCountdown" style="font-size: 28px; font-weight: bold; margin-bottom: 20px;">3</div>
-  </div>
-</div>
-
-<script>
-  // Unity Ads Configuration Object
-  const UNITY_ADS_CONFIG = {
-    gameId: "YOUR_UNITYADS_GAME_ID",
-    placements: {
-      rewarded: "Rewarded_Android",
-      interstitial: "Interstitial_Android",
-      banner: "Banner_Android"
-    }
-  };
-
-  // State Management
-  let currentUser = null;
-  let spinCount = 0;
-  let currentMathResult = 0;
-  let bookPageCounter = 1;
-  let bookTimer = null;
-  let sliderTriggered = false;
-
-  // Global Mock/Bridge Unity Ads Controller
-  const UnityAdsManager = {
-    showAd: function(placementId, onComplete) {
-      const modal = document.getElementById('adModal');
-      const title = document.getElementById('adTitle');
-      const details = document.getElementById('adDetails');
-      const countdown = document.getElementById('adCountdown');
-
-      title.innerText = `Loading ${placementId}`;
-      details.innerText = `UnityAds Game ID: ${UNITY_ADS_CONFIG.gameId} | Placement: ${placementId}`;
-      modal.classList.add('active');
-
-      let timer = 2;
-      countdown.innerText = timer;
-
-      // Native Bridge Hook
-      if (window.AndroidBridge && typeof window.AndroidBridge.showUnityAd === 'function') {
-        window.AndroidBridge.showUnityAd(UNITY_ADS_CONFIG.gameId, placementId);
-      }
-
-      const interval = setInterval(() => {
-        timer--;
-        countdown.innerText = timer;
-        if (timer <= 0) {
-          clearInterval(interval);
-          modal.classList.remove('active');
-          if (onComplete) onComplete();
+        // Function to switch between pages
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
         }
-      }, 1000);
-    }
-  };
 
-  // Authentication & IP-based UID Generator
-  async function generateUID() {
-    let ip = "127.0.0.1";
-    try {
-      const res = await fetch('https://api.ipify.org?format=json');
-      const data = await res.json();
-      ip = data.ip;
-    } catch (e) {
-      ip = Math.random().toString();
-    }
-    const cleanIP = ip.replace(/[^0-9]/g, '');
-    const randomSuffix = Math.random().toString(36).substring(2, 12) + Math.random().toString(36).substring(2, 12);
-    let uid = "UID_" + cleanIP + "_" + randomSuffix;
-    return uid.substring(0, 24).toUpperCase();
-  }
+        // Function to handle network button clicks
+        function handleNetwork(networkName) {
+            currentNetwork = networkName;
+            
+            // Check local storage for a saved link
+            const savedLink = localStorage.getItem(networkName + '_link');
 
-  async function handleAuth() {
-    const userIn = document.getElementById('username').value.trim();
-    const passIn = document.getElementById('password').value.trim();
+            if (savedLink) {
+                // If link is saved, open the ad directly
+                openAd(savedLink);
+            } else {
+                // If no link is saved, open the setup page
+                document.getElementById('setup-title').innerText = networkName + " Setup";
+                document.getElementById('ad-link-input').value = "";
+                showPage('setup-page');
+            }
+        }
 
-    if (!userIn || !passIn) {
-      alert("Please enter username and password.");
-      return;
-    }
+        // Function to save the link and show the ad
+        function saveAndShowAd() {
+            const link = document.getElementById('ad-link-input').value.trim();
+            
+            if(link === "" || !link.startsWith("http")) {
+                alert("Please enter a valid link starting with http:// or https://");
+                return;
+            }
 
-    const uid = await generateUID();
-    currentUser = { username: userIn, uid: uid };
+            // Permanently save the link in local storage
+            localStorage.setItem(currentNetwork + '_link', link);
+            
+            // Go back to the main menu first, then open the ad
+            showPage('main-menu');
+            openAd(link);
+        }
 
-    document.getElementById('profUsername').innerText = currentUser.username;
-    document.getElementById('profUID').innerText = currentUser.uid;
-
-    document.getElementById('appHeader').style.display = 'flex';
-    showPage('mainLandingPage');
-  }
-
-  function openProfile() {
-    showPage('profilePage');
-  }
-
-  function showPage(pageId) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById(pageId).classList.add('active');
-
-    // Toggle Back Button visibility
-    const backBtn = document.getElementById('backBtn');
-    if (pageId.startsWith('game') && pageId !== 'gameMenu') {
-      backBtn.style.display = 'block';
-    } else {
-      backBtn.style.display = 'none';
-    }
-
-    // Clean up reading timer if navigated away
-    if (pageId !== 'gameRead' && bookTimer) {
-      clearInterval(bookTimer);
-      bookTimer = null;
-    }
-  }
-
-  // Navigation & Sub-Game Launchers
-  function handlePlayGameClick() {
-    UnityAdsManager.showAd(UNITY_ADS_CONFIG.placements.rewarded, () => {
-      showPage('gameMenu');
-    });
-  }
-
-  function startSubGame(gameKey) {
-    UnityAdsManager.showAd(UNITY_ADS_CONFIG.placements.rewarded, () => {
-      if (gameKey === 'math') {
-        initMathQuiz();
-        showPage('gameMath');
-      } else if (gameKey === 'spin') {
-        showPage('gameSpin');
-      } else if (gameKey === 'read') {
-        initBookReader();
-        showPage('gameRead');
-      } else if (gameKey === 'watch') {
-        showPage('gameWatch');
-      } else if (gameKey === 'slide') {
-        document.getElementById('gameSlider').value = 0;
-        sliderTriggered = false;
-        showPage('gameSlide');
-      }
-    });
-  }
-
-  // Sub-menu 1: Math Quiz Logic
-  function initMathQuiz() {
-    const n1 = Math.floor(Math.random() * 20) + 1;
-    const n2 = Math.floor(Math.random() * 20) + 1;
-    const ops = ['+', '-', '*'];
-    const op = ops[Math.floor(Math.random() * ops.length)];
-
-    document.getElementById('mathNum1').innerText = n1;
-    document.getElementById('mathNum2').innerText = n2;
-    document.getElementById('mathOperator').innerText = op;
-    document.getElementById('mathAnswer').value = '';
-
-    if (op === '+') currentMathResult = n1 + n2;
-    if (op === '-') currentMathResult = n1 - n2;
-    if (op === '*') currentMathResult = n1 * n2;
-  }
-
-  function verifyMathAnswer() {
-    const userAns = parseInt(document.getElementById('mathAnswer').value, 10);
-    if (userAns === currentMathResult) {
-      UnityAdsManager.showAd(UNITY_ADS_CONFIG.placements.rewarded, () => {
-        alert("Correct Answer!");
-        initMathQuiz();
-      });
-    } else {
-      alert("Incorrect. Try again!");
-    }
-  }
-
-  // Sub-menu 2: Spinner Logic
-  function triggerSpin() {
-    spinCount++;
-    const wheel = document.getElementById('wheel');
-    let degrees = 0;
-    let targetAd = UNITY_ADS_CONFIG.placements.rewarded;
-
-    // Sequence Mapping
-    const mod = spinCount % 4;
-    if (mod === 1) {
-      degrees = 1440 + 135; // Lands on Video Ads (Red)
-      targetAd = UNITY_ADS_CONFIG.placements.rewarded;
-    } else if (mod === 2) {
-      degrees = 1440 + 225; // Lands on Interstitial Ads (Orange)
-      targetAd = UNITY_ADS_CONFIG.placements.interstitial;
-    } else if (mod === 3) {
-      degrees = 1440 + 315; // Lands on Banner Ads (Blue)
-      targetAd = UNITY_ADS_CONFIG.placements.banner;
-    } else if (mod === 0) {
-      degrees = 1440 + 225; // Lands on Interstitial Ads (Orange)
-      targetAd = UNITY_ADS_CONFIG.placements.interstitial;
-    }
-
-    wheel.style.transform = `rotate(${degrees}deg)`;
-
-    setTimeout(() => {
-      UnityAdsManager.showAd(targetAd, () => {
-        wheel.style.transition = 'none';
-        wheel.style.transform = 'rotate(0deg)';
-        setTimeout(() => wheel.style.transition = 'transform 3s cubic-bezier(0.15, 0.85, 0.35, 1.2)', 50);
-      });
-    }, 3200);
-  }
-
-  // Sub-menu 3: Read Book Logic
-  function initBookReader() {
-    bookPageCounter = 1;
-    updateBookDisplay();
-
-    if (bookTimer) clearInterval(bookTimer);
-    bookTimer = setInterval(() => {
-      bookPageCounter++;
-      updateBookDisplay();
-
-      // Trigger ad every 2 pages
-      if (bookPageCounter % 2 === 0) {
-        clearInterval(bookTimer);
-        UnityAdsManager.showAd(UNITY_ADS_CONFIG.placements.rewarded, () => {
-          initBookReaderTimer();
-        });
-      }
-    }, 2000);
-  }
-
-  function initBookReaderTimer() {
-    if (bookTimer) clearInterval(bookTimer);
-    bookTimer = setInterval(() => {
-      bookPageCounter++;
-      updateBookDisplay();
-      if (bookPageCounter % 2 === 0) {
-        clearInterval(bookTimer);
-        UnityAdsManager.showAd(UNITY_ADS_CONFIG.placements.rewarded, () => {
-          initBookReaderTimer();
-        });
-      }
-    }, 2000);
-  }
-
-  function updateBookDisplay() {
-    document.getElementById('bookContent').innerText = `Book Chapter 1 - Reading Page ${bookPageCounter}\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Continuation of story on page ${bookPageCounter}...`;
-  }
-
-  // Sub-menu 4: Watch Video Logic
-  function handleWatchVideoClick() {
-    UnityAdsManager.showAd(UNITY_ADS_CONFIG.placements.rewarded, () => {
-      showPage('gameWatch');
-    });
-  }
-
-  // Sub-menu 5: Slide Show Logic
-  function handleSlide(val) {
-    if (val >= 90 && !sliderTriggered) {
-      sliderTriggered = true;
-      setTimeout(() => {
-        UnityAdsManager.showAd(UNITY_ADS_CONFIG.placements.rewarded, () => {
-          document.getElementById('gameSlider').value = 0;
-          sliderTriggered = false;
-        });
-      }, 1000);
-    }
-  }
-</script>
+        // Function to open the direct link (using window.open)
+        function openAd(url) {
+            // Opens the link in a new tab or the app's native browser view.
+            // The user can press the device's Back button to return to the menu.
+            window.open(url, '_blank');
+        }
+    </script>
 </body>
 </html>
