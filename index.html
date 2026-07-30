@@ -63,9 +63,11 @@
             transform: scale(0.98);
         }
 
-        .btn-adsterra { background-color: #ff4757; }
+        /* Network Button Colors */
         .btn-monetag { background-color: #2ed573; }
-        .btn-startio { background-color: #8e44ad; } /* New Start.io Button Color */
+        .btn-adsterra { background-color: #ff4757; }
+        .btn-startio { background-color: #9b59b6; } /* Start.io Button Color */
+        
         .btn-back { background-color: #747d8c; }
         .btn-save { background-color: #007bff; }
 
@@ -85,50 +87,19 @@
             border-color: #007bff;
         }
 
-        /* Start.io Ad Viewer (Full Screen Overlay) */
+        /* Start.io Fullscreen Ad Container */
         #startio-viewer {
-            position: fixed;
-            top: 0;
-            left: 0;
+            background-color: #000;
+            color: white;
             width: 100%;
             height: 100%;
-            background: #ffffff;
-            z-index: 1000;
-            display: none; /* Hidden by default */
+            display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
         }
-        
         #startio-viewer.active {
             display: flex;
-        }
-
-        /* Close Button (×) for Start.io */
-        .close-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            font-size: 28px;
-            color: white;
-            background: #ff4757;
-            cursor: pointer;
-            font-weight: bold;
-            z-index: 1001;
-            border-radius: 50%;
-            width: 45px;
-            height: 45px;
-            text-align: center;
-            line-height: 45px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-
-        /* Placeholder for Start.io Ad Content */
-        .ad-content {
-            border: 2px dashed #8e44ad;
-            padding: 40px;
-            border-radius: 10px;
-            color: #333;
         }
     </style>
 </head>
@@ -137,67 +108,66 @@
     <!-- 1. Main Menu Page -->
     <div id="main-menu" class="page active">
         <h2>Ad Network Menu</h2>
-        <p class="info-text">Select a network to view ads.</p>
+        <p class="info-text">Click on any network below to view ads.</p>
         <button class="btn-monetag" onclick="handleNetwork('MoneTag')">MoneTag</button>
         <button class="btn-adsterra" onclick="handleNetwork('Adsterra')">Adsterra</button>
-        <button class="btn-startio" onclick="handleNetwork('Start.io')">Start.io</button> <!-- New Option -->
+        <button class="btn-startio" onclick="handleNetwork('Start.io')">Start.io</button>
     </div>
 
-    <!-- 2. Setup Page (Shows only the first time) -->
+    <!-- 2. Setup Page (Dynamic for URL or App ID) -->
     <div id="setup-page" class="page">
         <h2 id="setup-title">Setup</h2>
         <p class="info-text" id="setup-desc">Provide the required details below.</p>
-        <!-- Input field dynamically changes based on network -->
-        <input type="text" id="ad-input" required>
+        <input type="text" id="ad-input" placeholder="Enter here..." required>
         <button class="btn-save" onclick="saveAndShowAd()">Save & Show Ad</button>
         <button class="btn-back" onclick="showPage('main-menu')">Back to Menu</button>
     </div>
 
-    <!-- 3. Start.io Ad Viewer Page (With Cross Button) -->
-    <div id="startio-viewer">
-        <div class="close-btn" onclick="closeStartIoAd()">×</div>
-        <div class="ad-content">
-            <h3>Start.io Ad Running</h3>
-            <p>App ID: <strong id="display-app-id"></strong></p>
-            <p style="font-size: 12px; color: #777;">(Your Start.io Ads will be displayed here)</p>
-        </div>
+    <!-- 3. Start.io Ad Viewer Page (NO Back or Cross Button) -->
+    <div id="startio-viewer" class="page">
+        <h3>Start.io Ad is Running...</h3>
+        <p style="color: #ccc; font-size: 14px;">App ID: <span id="display-app-id"></span></p>
+        <!-- Actual Start.io Ads/Scripts will render in this full-screen space -->
     </div>
 
     <script>
-        let currentNetwork = ''; // Stores the currently clicked network
+        let currentNetwork = ''; 
 
-        // Function to switch between main pages
+        // Switch Pages
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
         }
 
-        // Function to handle network button clicks
+        // Handle Network Clicks
         function handleNetwork(networkName) {
             currentNetwork = networkName;
             
-            // Check local storage for saved data
-            const savedData = localStorage.getItem(networkName + '_data');
+            // Determine storage key (App ID for Start.io, Link for others)
+            const storageKey = (networkName === 'Start.io') ? 'Start.io_appid' : networkName + '_link';
+            const savedData = localStorage.getItem(storageKey);
 
             if (savedData) {
-                // If data is saved, show the ad directly
-                showAd(currentNetwork, savedData);
+                // If saved data exists, show the ad directly
+                if (networkName === 'Start.io') {
+                    openStartIoAd(savedData);
+                } else {
+                    openAd(savedData);
+                }
             } else {
-                // If not saved, prepare the setup page
+                // Setup UI specifically based on the network
                 document.getElementById('setup-title').innerText = networkName + " Setup";
                 const inputField = document.getElementById('ad-input');
                 const descText = document.getElementById('setup-desc');
 
                 if (networkName === 'Start.io') {
-                    // Setup for Start.io App ID
-                    inputField.type = "text";
-                    inputField.placeholder = "Enter Start.io App ID (e.g., 205465545)";
                     descText.innerText = "Paste your Start.io App ID below. You only need to save this once.";
+                    inputField.placeholder = "Enter App ID (e.g., 201234567)";
+                    inputField.type = "text"; 
                 } else {
-                    // Setup for Direct Links (Adsterra/MoneTag)
-                    inputField.type = "url";
-                    inputField.placeholder = "https://example.com/direct-link";
                     descText.innerText = "Paste your advertiser direct link below. You only need to save this once.";
+                    inputField.placeholder = "https://example.com/direct-link";
+                    inputField.type = "url";
                 }
                 
                 inputField.value = "";
@@ -205,44 +175,41 @@
             }
         }
 
-        // Function to save the input and show the ad
+        // Save Input and Show Ad
         function saveAndShowAd() {
-            const inputVal = document.getElementById('ad-input').value.trim();
+            const inputValue = document.getElementById('ad-input').value.trim();
             
-            if(inputVal === "") {
-                alert("Please enter a valid Link or App ID.");
+            if(inputValue === "") {
+                alert("Please enter a valid Link or App ID!");
                 return;
             }
 
-            // URL Validation for Adsterra and MoneTag
-            if (currentNetwork !== 'Start.io' && !inputVal.startsWith("http")) {
+            // URL Validation (Only for MoneTag and Adsterra)
+            if(currentNetwork !== 'Start.io' && !inputValue.startsWith("http")) {
                 alert("Please enter a valid link starting with http:// or https://");
                 return;
             }
 
-            // Permanently save the data in local storage
-            localStorage.setItem(currentNetwork + '_data', inputVal);
-            
-            // Go back to the main menu first, then show the ad
-            showPage('main-menu');
-            showAd(currentNetwork, inputVal);
-        }
-
-        // Function to trigger the Ad
-        function showAd(network, data) {
-            if (network === 'Start.io') {
-                // Open full-screen Start.io Viewer with Cross Button
-                document.getElementById('display-app-id').innerText = data;
-                document.getElementById('startio-viewer').classList.add('active');
+            // Save Data
+            if(currentNetwork === 'Start.io') {
+                localStorage.setItem('Start.io_appid', inputValue);
+                openStartIoAd(inputValue);
             } else {
-                // Open direct link for Adsterra/MoneTag
-                window.open(data, '_blank');
+                localStorage.setItem(currentNetwork + '_link', inputValue);
+                showPage('main-menu');
+                openAd(inputValue);
             }
         }
 
-        // Function to close Start.io Ad using the cross (×) button
-        function closeStartIoAd() {
-            document.getElementById('startio-viewer').classList.remove('active');
+        // Open Link Ads (Adsterra, MoneTag)
+        function openAd(url) {
+            window.open(url, '_blank');
+        }
+
+        // Open Start.io Ad (Fullscreen, No Close Buttons)
+        function openStartIoAd(appId) {
+            document.getElementById('display-app-id').innerText = appId;
+            showPage('startio-viewer');
         }
     </script>
 </body>
