@@ -66,7 +66,7 @@
         /* Network Button Colors */
         .btn-monetag { background-color: #2ed573; }
         .btn-adsterra { background-color: #ff4757; }
-        .btn-startio { background-color: #9b59b6; } /* Start.io Button Color */
+        .btn-startio { background-color: #9b59b6; }
         
         .btn-back { background-color: #747d8c; }
         .btn-save { background-color: #007bff; }
@@ -97,9 +97,19 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            position: relative;
         }
         #startio-viewer.active {
             display: flex;
+        }
+
+        #ad-container {
+            margin-top: 20px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
     </style>
 </head>
@@ -114,7 +124,7 @@
         <button class="btn-startio" onclick="handleNetwork('Start.io')">Start.io</button>
     </div>
 
-    <!-- 2. Setup Page (Dynamic for URL or App ID) -->
+    <!-- 2. Setup Page -->
     <div id="setup-page" class="page">
         <h2 id="setup-title">Setup</h2>
         <p class="info-text" id="setup-desc">Provide the required details below.</p>
@@ -123,11 +133,13 @@
         <button class="btn-back" onclick="showPage('main-menu')">Back to Menu</button>
     </div>
 
-    <!-- 3. Start.io Ad Viewer Page (NO Back or Cross Button) -->
+    <!-- 3. Start.io Ad Viewer Page -->
     <div id="startio-viewer" class="page">
-        <h3>Start.io Ad is Running...</h3>
+        <h3>Loading Start.io Ad...</h3>
         <p style="color: #ccc; font-size: 14px;">App ID: <span id="display-app-id"></span></p>
-        <!-- Actual Start.io Ads/Scripts will render in this full-screen space -->
+        
+        <!-- এই কন্টেইনারের ভেতরে ডাইনামিক্যালি অ্যাড স্ক্রিপ্ট রান করবে -->
+        <div id="ad-container"></div>
     </div>
 
     <script>
@@ -143,19 +155,16 @@
         function handleNetwork(networkName) {
             currentNetwork = networkName;
             
-            // Determine storage key (App ID for Start.io, Link for others)
             const storageKey = (networkName === 'Start.io') ? 'Start.io_appid' : networkName + '_link';
             const savedData = localStorage.getItem(storageKey);
 
             if (savedData) {
-                // If saved data exists, show the ad directly
                 if (networkName === 'Start.io') {
                     openStartIoAd(savedData);
                 } else {
                     openAd(savedData);
                 }
             } else {
-                // Setup UI specifically based on the network
                 document.getElementById('setup-title').innerText = networkName + " Setup";
                 const inputField = document.getElementById('ad-input');
                 const descText = document.getElementById('setup-desc');
@@ -184,13 +193,11 @@
                 return;
             }
 
-            // URL Validation (Only for MoneTag and Adsterra)
             if(currentNetwork !== 'Start.io' && !inputValue.startsWith("http")) {
                 alert("Please enter a valid link starting with http:// or https://");
                 return;
             }
 
-            // Save Data
             if(currentNetwork === 'Start.io') {
                 localStorage.setItem('Start.io_appid', inputValue);
                 openStartIoAd(inputValue);
@@ -206,10 +213,32 @@
             window.open(url, '_blank');
         }
 
-        // Open Start.io Ad (Fullscreen, No Close Buttons)
+        // Start.io Dynamic Script Injector
         function openStartIoAd(appId) {
             document.getElementById('display-app-id').innerText = appId;
             showPage('startio-viewer');
+
+            const adContainer = document.getElementById('ad-container');
+            
+            // আগের কোনো স্ক্রিপ্ট থাকলে ক্লিয়ার করে দেওয়া হচ্ছে
+            adContainer.innerHTML = '';
+
+            // 1. App ID সেট করার জন্য স্ক্রিপ্ট
+            const configScript = document.createElement('script');
+            configScript.type = 'text/javascript';
+            configScript.innerHTML = `
+                var startapp_publisher_id = "${appId}";
+            `;
+
+            // 2. Start.io এর মেইন অ্যাড লোডার স্ক্রিপ্ট
+            const loaderScript = document.createElement('script');
+            loaderScript.type = 'text/javascript';
+            loaderScript.async = true;
+            loaderScript.src = "https://w.startappservice.com/startapp.js"; // Start.io Web SDK
+
+            // স্ক্রিপ্টগুলো কন্টেইনারে ইনজেক্ট করা হচ্ছে
+            adContainer.appendChild(configScript);
+            adContainer.appendChild(loaderScript);
         }
     </script>
 </body>
