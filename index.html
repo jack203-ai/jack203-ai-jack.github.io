@@ -58,7 +58,7 @@
         }
         
         button:active {
-            transform: scale(0.98);
+            transform: scale(0.95);
         }
 
         .btn-monetag { background-color: #2ed573; }
@@ -83,45 +83,67 @@
             border-color: #007bff;
         }
 
-        /* --- Running Page Styling --- */
-        #running-page {
-            background-color: #1e272e;
-            color: white;
+        /* --- Fullscreen Ad Viewer (Iframe) --- */
+        #ad-viewer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            z-index: 1000;
+            display: none;
+        }
+        #ad-viewer.active {
+            display: block;
         }
 
-        #running-page h2 {
-            color: #0be881;
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #fff;
         }
 
-        .stop-btn {
+        /* --- Perfect Floating Stop Button --- */
+        .floating-stop-btn {
+            position: absolute;
+            bottom: 30px; /* স্ক্রিনের নিচে থাকবে */
+            left: 50%;
+            transform: translateX(-50%);
             background-color: #ff3f34;
             color: white;
-            padding: 15px 40px;
-            font-size: 20px;
+            padding: 12px 30px;
+            font-size: 18px;
             font-weight: bold;
             border-radius: 30px;
-            border: 3px solid white;
-            box-shadow: 0 5px 20px rgba(255, 63, 52, 0.4);
-            margin-top: 40px;
-            animation: pulse 1.5s infinite;
+            border: 2px solid white;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+            z-index: 9999; /* সবার উপরে থাকবে */
+            width: auto;
+            max-width: 250px;
+            animation: pulse 2s infinite;
         }
 
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+            0% { box-shadow: 0 0 0 0 rgba(255, 63, 52, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(255, 63, 52, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 63, 52, 0); }
         }
     </style>
 </head>
 <body>
 
-    <!-- 1. Main Menu -->
+    <!-- 1. Main Menu Page -->
     <div id="main-menu" class="page active">
         <h2>Auto Ad Network Menu</h2>
-        <p class="info-text">Select a network. Ads will loop automatically in your browser (15s on, 1s off).</p>
-        <button class="btn-monetag" onclick="handleNetwork('MoneTag')">MoneTag</button>
-        <button class="btn-adsterra" onclick="handleNetwork('Adsterra')">Adsterra</button>
-        <button class="btn-hilltopads" onclick="handleNetwork('HilltopAds')">HilltopAds</button>
+        <p class="info-text">Select a network. Ads will run inside the app (15s Ad ➔ Menu ➔ 1s Wait ➔ Repeat).</p>
+        <button id="btn-monetag" class="btn-monetag" onclick="handleNetwork('MoneTag')">MoneTag</button>
+        <button id="btn-adsterra" class="btn-adsterra" onclick="handleNetwork('Adsterra')">Adsterra</button>
+        <button id="btn-hilltopads" class="btn-hilltopads" onclick="handleNetwork('HilltopAds')">HilltopAds</button>
+        
+        <!-- Main menu stop button (Hidden by default) -->
+        <button id="menu-stop-btn" class="floating-stop-btn" style="display: none; position: relative; bottom: 0; margin-top: 30px;" onclick="stopAutoAds()">🛑 Stop Loop</button>
     </div>
 
     <!-- 2. Setup Page -->
@@ -133,13 +155,10 @@
         <button class="btn-back" onclick="showPage('main-menu')">Back to Menu</button>
     </div>
 
-    <!-- 3. Running Page -->
-    <div id="running-page" class="page">
-        <h2>Ads are Running...</h2>
-        <p class="info-text" style="color: #d2dae2;">Ads are opening in your browser. Please do not close this app to keep the bot running.</p>
-        
-        <!-- Center Aligned Stop Button -->
-        <button class="stop-btn" onclick="stopAutoAds()">🛑 Stop Auto Ads</button>
+    <!-- 3. Ad Viewer (Fullscreen Iframe with Floating Stop Button) -->
+    <div id="ad-viewer">
+        <button class="floating-stop-btn" onclick="stopAutoAds()">🛑 Stop Auto Ads</button>
+        <iframe id="ad-frame" sandbox="allow-scripts allow-same-origin allow-popups allow-forms" src=""></iframe>
     </div>
 
     <script>
@@ -147,11 +166,16 @@
         let isLoopRunning = false; 
         let viewTimer; 
         let restartTimer; 
-        let adWindow = null; 
 
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
+            document.getElementById('ad-viewer').classList.remove('active');
+
+            if (pageId === 'ad-viewer') {
+                document.getElementById('ad-viewer').classList.add('active');
+            } else {
+                document.getElementById(pageId).classList.add('active');
+            }
         }
 
         function handleNetwork(networkName) {
@@ -159,7 +183,9 @@
             const savedData = localStorage.getItem(networkName + '_link');
 
             if (savedData) {
-                startAutoLoop(savedData);
+                isLoopRunning = true;
+                document.getElementById('menu-stop-btn').style.display = 'block'; // মেইন মেনুতেও স্টপ বাটন শো করবে
+                executeAdCycle(savedData);
             } else {
                 document.getElementById('setup-title').innerText = networkName + " Setup";
                 document.getElementById('ad-input').value = "";
@@ -176,36 +202,44 @@
             }
 
             localStorage.setItem(currentNetwork + '_link', inputValue);
-            startAutoLoop(inputValue);
+            isLoopRunning = true;
+            document.getElementById('menu-stop-btn').style.display = 'block';
+            executeAdCycle(inputValue);
         }
 
-        function startAutoLoop(url) {
-            isLoopRunning = true; 
-            showPage('running-page'); 
-            
-            // লিংকের শেষে টাইমস্ট্যাম্প যোগ করা হলো যাতে প্রতিবার নতুন অ্যাড লোড হয়
-            const cacheBusterUrl = url + (url.includes('?') ? '&' : '?') + 'cb=' + new Date().getTime();
-            
-            // এক্সটার্নাল ব্রাউজার/ট্যাবে অ্যাড ওপেন করা
-            adWindow = window.open(cacheBusterUrl, '_blank');
+        // মূল অটো-বট লজিক ফাংশন
+        function executeAdCycle(url) {
+            if (!isLoopRunning) return; 
 
-            // ১৫ সেকেন্ডের টাইমার (15000 ms)
+            // ১. বাটনে ক্লিক হওয়ার একটি ভিজ্যুয়াল ইফেক্ট দেওয়া
+            const btnId = 'btn-' + currentNetwork.toLowerCase();
+            const btnElement = document.getElementById(btnId);
+            if (btnElement) {
+                btnElement.style.opacity = '0.5';
+                setTimeout(() => { btnElement.style.opacity = '1'; }, 300);
+            }
+
+            // ২. লিংকের শেষে টাইমস্ট্যাম্প যোগ করে অ্যাড লোড করা (Cache Bypass)
+            const cacheBusterUrl = url + (url.includes('?') ? '&' : '?') + 'cb=' + new Date().getTime();
+            document.getElementById('ad-frame').src = cacheBusterUrl;
+            showPage('ad-viewer');
+
+            // ৩. ঠিক ১৫ সেকেন্ড অ্যাড চলবে (15000 milliseconds)
             viewTimer = setTimeout(() => {
                 if (!isLoopRunning) return; 
-                
-                // ১৫ সেকেন্ড পর ট্যাবটি ওপেন থাকলে সেটি কেটে দেওয়া
-                if (adWindow && !adWindow.closed) {
-                    adWindow.close();
-                }
 
-                // ১ সেকেন্ড পর আবার লুপ চালু
+                // ১৫ সেকেন্ড পর অ্যাড ক্লোজ করে মেইন মেনুতে ফেরত আসবে
+                document.getElementById('ad-frame').src = "about:blank"; 
+                showPage('main-menu');
+
+                // ৪. মেইন মেনুতে ঠিক ১ সেকেন্ড (1000 milliseconds) অপেক্ষা করে আবার সাইকেল শুরু হবে
                 restartTimer = setTimeout(() => {
                     if (isLoopRunning) {
-                        startAutoLoop(url); 
+                        executeAdCycle(url); // নিজে নিজেই আবার ক্লিক করে লুপ চালাবে
                     }
                 }, 1000);
 
-            }, 15000); // 15 seconds
+            }, 15000); // 15 Seconds Timer
         }
 
         function stopAutoAds() {
@@ -213,11 +247,8 @@
             clearTimeout(viewTimer); 
             clearTimeout(restartTimer); 
             
-            // স্টপ করলে ওপেন থাকা ট্যাবটিও ক্লোজ হয়ে যাবে
-            if (adWindow && !adWindow.closed) {
-                adWindow.close();
-            }
-            
+            document.getElementById('ad-frame').src = "about:blank"; 
+            document.getElementById('menu-stop-btn').style.display = 'none'; // মেইন মেনুর স্টপ বাটন হাইড করা
             showPage('main-menu'); 
         }
     </script>
