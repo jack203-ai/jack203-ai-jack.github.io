@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- সিকিউরিটি বাইপাস করার জন্য রেফারার হাইড করা হলো -->
     <meta name="referrer" content="no-referrer">
     <title>Auto Ad Viewer App</title>
     <style>
@@ -84,60 +83,44 @@
             border-color: #007bff;
         }
 
-        /* Iframe Container */
-        #ad-viewer {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #000;
-            z-index: 1000;
-            display: none;
-            flex-direction: column;
-        }
-        #ad-viewer.active {
-            display: flex;
+        /* Running Page Styling */
+        #running-page {
+            background-color: #000;
+            color: white;
         }
 
-        iframe {
-            flex: 1;
-            width: 100%;
-            height: 100%;
-            border: none;
-            background: #fff;
-        }
-
-        /* Stop Button Styling */
         .stop-btn {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
             background-color: #e74c3c;
             color: white;
-            padding: 10px 20px;
-            font-size: 16px;
+            padding: 15px 30px;
+            font-size: 18px;
             font-weight: bold;
             border-radius: 30px;
             border: 2px solid white;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            z-index: 1001;
-            width: auto;
-            max-width: 250px;
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.5);
+            margin-top: 20px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
     </style>
 </head>
 <body>
 
+    <!-- 1. Main Menu -->
     <div id="main-menu" class="page active">
         <h2>Auto Ad Network Menu</h2>
-        <p class="info-text">Select a network. Ads will loop automatically (10s on, 1s off).</p>
+        <p class="info-text">Select a network. Ads will loop automatically in your browser (10s on, 1s off).</p>
         <button class="btn-monetag" onclick="handleNetwork('MoneTag')">MoneTag</button>
         <button class="btn-adsterra" onclick="handleNetwork('Adsterra')">Adsterra</button>
         <button class="btn-hilltopads" onclick="handleNetwork('HilltopAds')">HilltopAds</button>
     </div>
 
+    <!-- 2. Setup Page -->
     <div id="setup-page" class="page">
         <h2 id="setup-title">Setup</h2>
         <p class="info-text" id="setup-desc">Paste your advertiser direct link below.</p>
@@ -146,10 +129,11 @@
         <button class="btn-back" onclick="showPage('main-menu')">Back to Menu</button>
     </div>
 
-    <div id="ad-viewer">
+    <!-- 3. Running Page (Instead of Iframe) -->
+    <div id="running-page" class="page">
+        <h2>Ads are Running...</h2>
+        <p class="info-text" style="color: #ccc;">Ads are opening in your browser. Please do not close this app to keep the loop running.</p>
         <button class="stop-btn" onclick="stopAutoAds()">🛑 Stop Auto Ads</button>
-        <!-- Iframe এ সর্বোচ্চ পারমিশন (sandbox) দেওয়া হলো যাতে স্ক্রিপ্ট ব্লক না হয় -->
-        <iframe id="ad-frame" sandbox="allow-scripts allow-same-origin allow-popups allow-forms" src=""></iframe>
     </div>
 
     <script>
@@ -157,16 +141,11 @@
         let isLoopRunning = false; 
         let viewTimer; 
         let restartTimer; 
+        let adWindow = null; // ব্রাউজারের ট্যাব কন্ট্রোল করার জন্য ভেরিয়েবল
 
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-            document.getElementById('ad-viewer').classList.remove('active');
-
-            if (pageId === 'ad-viewer') {
-                document.getElementById('ad-viewer').classList.add('active');
-            } else {
-                document.getElementById(pageId).classList.add('active');
-            }
+            document.getElementById(pageId).classList.add('active');
         }
 
         function handleNetwork(networkName) {
@@ -196,22 +175,25 @@
 
         function startAutoLoop(url) {
             isLoopRunning = true; 
+            showPage('running-page'); // রানিং পেজ শো করানো
             
-            // Cache clear করার জন্য লিংকের শেষে ר্যান্ডম নাম্বার যোগ করা হলো
+            // Cache bypass করার জন্য লিংকের শেষে টাইমস্ট্যাম্প যোগ করা হলো
             const cacheBusterUrl = url + (url.includes('?') ? '&' : '?') + 'cb=' + new Date().getTime();
             
-            document.getElementById('ad-frame').src = cacheBusterUrl;
-            showPage('ad-viewer');
+            // নতুন ট্যাবে/ব্রাউজারে অ্যাড ওপেন করা
+            adWindow = window.open(cacheBusterUrl, '_blank');
 
             viewTimer = setTimeout(() => {
                 if (!isLoopRunning) return; 
                 
-                document.getElementById('ad-frame').src = "about:blank"; 
-                showPage('main-menu');
+                // ১০ সেকেন্ড পর যদি ট্যাবটি ওপেন থাকে, তাহলে সেটি ক্লোজ করে দেওয়া
+                if (adWindow && !adWindow.closed) {
+                    adWindow.close();
+                }
 
                 restartTimer = setTimeout(() => {
                     if (isLoopRunning) {
-                        startAutoLoop(url); 
+                        startAutoLoop(url); // ১ সেকেন্ড পর আবার লুপ চালু
                     }
                 }, 1000);
 
@@ -223,7 +205,11 @@
             clearTimeout(viewTimer); 
             clearTimeout(restartTimer); 
             
-            document.getElementById('ad-frame').src = "about:blank"; 
+            // স্টপ করলে ওপেন থাকা ট্যাবটিও ক্লোজ হয়ে যাবে
+            if (adWindow && !adWindow.closed) {
+                adWindow.close();
+            }
+            
             showPage('main-menu'); 
         }
     </script>
