@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ad Viewer App</title>
+    <!-- সিকিউরিটি বাইপাস করার জন্য রেফারার হাইড করা হলো -->
+    <meta name="referrer" content="no-referrer">
+    <title>Auto Ad Viewer App</title>
     <style>
-        /* Basic Styling */
         body {
             margin: 0;
             padding: 0;
@@ -17,7 +18,6 @@
             overflow: hidden;
         }
 
-        /* Page Transitions */
         .page {
             display: none;
             flex: 1;
@@ -31,7 +31,6 @@
             display: flex;
         }
 
-        /* Text and Button Design */
         h2 {
             color: #333;
             margin-bottom: 20px;
@@ -63,11 +62,9 @@
             transform: scale(0.98);
         }
 
-        /* Network Button Colors */
         .btn-monetag { background-color: #2ed573; }
         .btn-adsterra { background-color: #ff4757; }
-        .btn-hilltopads { background-color: #e67e22; } /* HilltopAds Button Color (Orange) */
-        
+        .btn-hilltopads { background-color: #e67e22; }
         .btn-back { background-color: #747d8c; }
         .btn-save { background-color: #007bff; }
 
@@ -86,81 +83,148 @@
         input:focus {
             border-color: #007bff;
         }
+
+        /* Iframe Container */
+        #ad-viewer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+        }
+        #ad-viewer.active {
+            display: flex;
+        }
+
+        iframe {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #fff;
+        }
+
+        /* Stop Button Styling */
+        .stop-btn {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #e74c3c;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 30px;
+            border: 2px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            z-index: 1001;
+            width: auto;
+            max-width: 250px;
+        }
     </style>
 </head>
 <body>
 
-    <!-- 1. Main Menu Page -->
     <div id="main-menu" class="page active">
-        <h2>Ad Network Menu</h2>
-        <p class="info-text">Click on any network below to view ads. Press your phone's Back button when you are done to return here.</p>
+        <h2>Auto Ad Network Menu</h2>
+        <p class="info-text">Select a network. Ads will loop automatically (10s on, 1s off).</p>
         <button class="btn-monetag" onclick="handleNetwork('MoneTag')">MoneTag</button>
         <button class="btn-adsterra" onclick="handleNetwork('Adsterra')">Adsterra</button>
         <button class="btn-hilltopads" onclick="handleNetwork('HilltopAds')">HilltopAds</button>
     </div>
 
-    <!-- 2. Setup Page (Dynamic for URL) -->
     <div id="setup-page" class="page">
         <h2 id="setup-title">Setup</h2>
-        <p class="info-text" id="setup-desc">Paste your advertiser direct link below. You only need to save this once.</p>
+        <p class="info-text" id="setup-desc">Paste your advertiser direct link below.</p>
         <input type="url" id="ad-input" placeholder="https://example.com/direct-link" required>
-        <button class="btn-save" onclick="saveAndShowAd()">Save & Show Ad</button>
+        <button class="btn-save" onclick="saveAndShowAd()">Save & Start Auto Ads</button>
         <button class="btn-back" onclick="showPage('main-menu')">Back to Menu</button>
+    </div>
+
+    <div id="ad-viewer">
+        <button class="stop-btn" onclick="stopAutoAds()">🛑 Stop Auto Ads</button>
+        <!-- Iframe এ সর্বোচ্চ পারমিশন (sandbox) দেওয়া হলো যাতে স্ক্রিপ্ট ব্লক না হয় -->
+        <iframe id="ad-frame" sandbox="allow-scripts allow-same-origin allow-popups allow-forms" src=""></iframe>
     </div>
 
     <script>
         let currentNetwork = ''; 
+        let isLoopRunning = false; 
+        let viewTimer; 
+        let restartTimer; 
 
-        // Switch Pages
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
+            document.getElementById('ad-viewer').classList.remove('active');
+
+            if (pageId === 'ad-viewer') {
+                document.getElementById('ad-viewer').classList.add('active');
+            } else {
+                document.getElementById(pageId).classList.add('active');
+            }
         }
 
-        // Handle Network Clicks
         function handleNetwork(networkName) {
             currentNetwork = networkName;
-            
-            // Check local storage for a saved link
             const savedData = localStorage.getItem(networkName + '_link');
 
             if (savedData) {
-                // If saved data exists, open the ad directly
-                openAd(savedData);
+                startAutoLoop(savedData);
             } else {
-                // Setup UI for Link Input
                 document.getElementById('setup-title').innerText = networkName + " Setup";
-                
-                const inputField = document.getElementById('ad-input');
-                inputField.value = "";
-                
+                document.getElementById('ad-input').value = "";
                 showPage('setup-page');
             }
         }
 
-        // Save Input and Show Ad
         function saveAndShowAd() {
             const inputValue = document.getElementById('ad-input').value.trim();
             
-            // Validate URL (Must contain http:// or https://)
-            if(inputValue === "" || !inputValue.startsWith("http")) {
+            if (inputValue === "" || !inputValue.startsWith("http")) {
                 alert("Please enter a valid link starting with http:// or https://");
                 return;
             }
 
-            // Save Data permanently based on network name
             localStorage.setItem(currentNetwork + '_link', inputValue);
-            
-            // Go back to main menu, then open ad
-            showPage('main-menu');
-            openAd(inputValue);
+            startAutoLoop(inputValue);
         }
 
-        // Open Link Ads (Adsterra, MoneTag, HilltopAds)
-        function openAd(url) {
-            // Opens the link in a new tab or the app's native browser view.
-            // The user can press the device's Back button to return to the menu.
-            window.open(url, '_blank');
+        function startAutoLoop(url) {
+            isLoopRunning = true; 
+            
+            // Cache clear করার জন্য লিংকের শেষে ר্যান্ডম নাম্বার যোগ করা হলো
+            const cacheBusterUrl = url + (url.includes('?') ? '&' : '?') + 'cb=' + new Date().getTime();
+            
+            document.getElementById('ad-frame').src = cacheBusterUrl;
+            showPage('ad-viewer');
+
+            viewTimer = setTimeout(() => {
+                if (!isLoopRunning) return; 
+                
+                document.getElementById('ad-frame').src = "about:blank"; 
+                showPage('main-menu');
+
+                restartTimer = setTimeout(() => {
+                    if (isLoopRunning) {
+                        startAutoLoop(url); 
+                    }
+                }, 1000);
+
+            }, 10000); // 10 seconds
+        }
+
+        function stopAutoAds() {
+            isLoopRunning = false; 
+            clearTimeout(viewTimer); 
+            clearTimeout(restartTimer); 
+            
+            document.getElementById('ad-frame').src = "about:blank"; 
+            showPage('main-menu'); 
         }
     </script>
 </body>
